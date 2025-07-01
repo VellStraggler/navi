@@ -1,0 +1,8 @@
+[
+{
+  "directory": "C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi Project/build",
+  "command": "C:\\MinGW\\bin\\g++.exe  @CMakeFiles/MyGLFWApp.dir/includes_CXX.rsp -g -std=gnu++1z -o CMakeFiles\\MyGLFWApp.dir\\version0\\window.cpp.obj -c \"C:\\Users\\david\\OneDrive\\Desktop\\COURSEWORK\\Navi Project\\version0\\window.cpp\"",
+  "file": "C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi Project/version0/window.cpp",
+  "output": "CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj"
+}
+]
