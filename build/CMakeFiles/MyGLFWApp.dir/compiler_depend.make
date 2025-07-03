@@ -4,7 +4,10 @@
 CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj: C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/window.cpp \
   C:/code-tools/glfw/include/GLFW/glfw3.h \
   C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/flit.cpp \
+  C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/geomlineref.cpp \
+  C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/myath.h \
   C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/particle.cpp \
+  C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/point.h \
   c:/mingw/include/_mingw.h \
   c:/mingw/include/ctype.h \
   c:/mingw/include/direct.h \
@@ -60,6 +63,7 @@ CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj: C:/Users/david/OneDrive/Deskto
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/predefined_ops.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/ptr_traits.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/range_access.h \
+  c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/sstream.tcc \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/stl_algobase.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/stl_bvector.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/stl_construct.h \
@@ -114,6 +118,7 @@ CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj: C:/Users/david/OneDrive/Deskto
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/new \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/ostream \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/ratio \
+  c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/sstream \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/stdexcept \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/streambuf \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/string \
@@ -125,19 +130,23 @@ CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj: C:/Users/david/OneDrive/Deskto
   c:/mingw/lib/gcc/mingw32/6.3.0/include/stdint.h
 
 
-c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/stl_iterator_base_funcs.h:
-
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/exception_ptr.h:
 
 C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/window.cpp:
-
-c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/stl_construct.h:
 
 c:/mingw/include/io.h:
 
 C:/code-tools/glfw/include/GLFW/glfw3.h:
 
+c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/sstream.tcc:
+
 C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/flit.cpp:
+
+C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/geomlineref.cpp:
+
+c:/mingw/include/_mingw.h:
+
+C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/myath.h:
 
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/ptr_traits.h:
 
@@ -147,11 +156,13 @@ c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/exception:
 
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/cpp_type_traits.h:
 
-C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/particle.cpp:
-
 c:/mingw/include/direct.h:
 
-c:/mingw/include/_mingw.h:
+C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/particle.cpp:
+
+c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/allocator.h:
+
+C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/point.h:
 
 c:/mingw/include/ctype.h:
 
@@ -217,8 +228,6 @@ c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/alloc_traits.h:
 
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/locale_classes.tcc:
 
-c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/allocator.h:
-
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/atomic_lockfree_defines.h:
 
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/basic_ios.h:
@@ -267,9 +276,13 @@ c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/stl_algobase.h:
 
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/stl_bvector.h:
 
+c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/stl_construct.h:
+
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/stl_function.h:
 
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/stl_iterator.h:
+
+c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/stl_iterator_base_funcs.h:
 
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/stl_iterator_base_types.h:
 
@@ -352,6 +365,8 @@ c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/new:
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/ostream:
 
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/ratio:
+
+c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/sstream:
 
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/stdexcept:
 

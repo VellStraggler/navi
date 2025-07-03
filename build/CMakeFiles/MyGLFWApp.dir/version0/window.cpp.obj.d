@@ -114,4 +114,9 @@ CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj: \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\bits\stl_bvector.h \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\bits\vector.tcc \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cmath c:\mingw\include\math.h \
- C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi\ Project\version0\particle.cpp
+ C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi\ Project\version0\point.h \
+ C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi\ Project\version0\geomlineref.cpp \
+ C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi\ Project\version0\myath.h \
+ C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi\ Project\version0\particle.cpp \
+ c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\sstream \
+ c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\bits\sstream.tcc

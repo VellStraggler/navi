@@ -1,44 +1,65 @@
 #include <cmath>
 #include <vector>
+#include <sstream>
+#include "myath.h"
 
 class Particle {
 public:
-    static constexpr float PI_2 = 3.14159265f / 2.0f;
-    static constexpr float DECEL = .999;
+    static constexpr float DECEL = .997;
     static constexpr float SCALE = 1.0;
+    static constexpr float MAX_INTENSITY = 1.0f;
     float x;
     float y;
     float direction;
     float speed;
-    float color[3];
-    float initColor[3];
+    float intensity;
     int lifeCycle;
-    Particle(float x, float y, float speed, float direction, float color[3]) {
-        this->x = x;
-        this->y = y;
-        this->speed = speed - (std::rand()%1000)/10;
-        this->direction = direction + ((std::rand() % 110) - 50)/(PI_2*40);
-        for(int i=0; i <3; i++) {
-            this->color[i] = color[i];
-            this->initColor[i] = color[i];
-        }
-        lifeCycle = (std::rand() % 1000);
+    int timeAlive;
+
+    /* A particle's lifespan is randomized, and it has a set level of deceleration.
+    Suggested maxLifeCycle is 750 frames. */
+    Particle(float x, float y, float speed, float generalDirection, float intensity, int maxLifeCycle) 
+        : x(x), y(y), intensity(intensity) {
+        // this->speed = randFloat(speed/2, speed);
+        this->speed = speed;
+        // improves particle spread
+        this->direction = randFloat(generalDirection-(PI_2), generalDirection + (PI-2));
+        lifeCycle = randFloat(maxLifeCycle);
+        timeAlive = 0;
+    }
+    std::string toString() {
+        std::ostringstream ss;
+        ss << "(" << x << ", " << y << ") speed: " << speed << ", dir: " << toDegrees(direction) << "*, intensity: " << intensity;
+        return ss.str();
     }
     void update() {
+        // DEBUG LINE
+        // speed = 1;
+        // decrease color based on life cycle
+        // black particles will be culled
+        if (intensity < .5) {
+            intensity -= MAX_INTENSITY/lifeCycle;
+        }
+        intensity -= MAX_INTENSITY/lifeCycle;
+        if (speed < 0.1) {
+            return;
+        }
         // update position based on speed and direction
-        x += speed * std::cos(direction - PI_2) * SCALE / 1000;
-        y += speed * std::sin(direction - PI_2) * SCALE / 1000;
+        x += speed * std::cos(direction) * SCALE;
+        y += speed * std::sin(direction) * SCALE;
+
+        // These will be implemented to affect the pixels more when
+        // song gets more volatile
         // y += ((std::rand() % 11) - 5)/5;
         // x += ((std::rand() % 11) - 5)/5;
         
-
-        if(speed > 0) {
-            speed *= DECEL;
-            // speed -= .1;
-        }
-
-        for(int i = 0; i < 3; i ++) {
-            color[i] -= initColor[i]/lifeCycle;
-        }
+        speed *= DECEL;
+        timeAlive++;
+    }
+    void addX(float amt) {
+        x += amt;
+    }
+    void addY(float amt) {
+        y += amt;
     }
 };
