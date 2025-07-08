@@ -9,6 +9,8 @@
 #include "flit.cpp"
 #include "particle.cpp"
 #include <cmath>
+#include "processedaudio.h"
+#include <algorithm>
 
 constexpr float MAX_INTENSITY = 1.0f;
 constexpr float MAX_LIGHT_REACH = 100.0f;
@@ -268,7 +270,7 @@ GLFWwindow* initGLFWWindow() {
 void trackSpeed(Window& w) {
     w.t1 = currentTimeMs();
     if (w.t1 > w.second_out) {
-        std::cout << "speed: " << (w.frames) << std::endl;
+        std::cout << (w.frames) << " fps" << std::endl;
         w.second_out = w.t1 + 1000;
         w.frames = 0;
     }
@@ -320,7 +322,7 @@ void initTexture() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
-int main() {
+int liveRender() {
     Window w = Window();
     std::vector<Flit> flits = getFlits(FLIT_COUNT);
     std::vector<Particle> particles = {};
@@ -357,5 +359,58 @@ int main() {
 
     glfwDestroyWindow(window);
     glfwTerminate();
+}
+int main() {
+    // liveRender();
+    // ProcessedAudio pa = ProcessedAudio("audio.wav");
+    // pa.run();
+    const char* audioFileName = "./version0/audio.wav";
+
+    ma_decoder_config config = ma_decoder_config_init(ma_format_f32, 0, 0);
+    ma_decoder decoder;
+    ma_result result = ma_decoder_init_file(audioFileName, &config, &decoder);
+    if (result != MA_SUCCESS) {
+        std::cerr << "Failed to load audio file.\n";
+        return -1;
+    }
+
+    std::cout << "Decoder ready. Channels: " << decoder.outputChannels
+              << ", Format: " << decoder.outputFormat << "\n";
+
+    const int UPS = 30;
+    float buffer[decoder.outputChannels * 1024];
+
+    while (true) {
+        std::fill(buffer, buffer + 1024, 0.0f); // optional
+
+        ma_uint64 framesRead = 0;
+        result = ma_decoder_read_pcm_frames(&decoder, buffer, 1024, &framesRead);
+        if (result != MA_SUCCESS) {
+            std::cerr << "Decoder read failed.\n";
+            break;
+        }
+
+        if (framesRead == 0 || decoder.outputChannels == 0) {
+            std::cout << "No more frames.\n";
+            break;
+        }
+
+        std::cout << "Frames read: " << framesRead << "\n";
+
+        float sum = 0.0f;
+        for (ma_uint64 i = 0; i < framesRead * decoder.outputChannels; ++i) {
+            sum += std::fabs(buffer[i]);
+        }
+
+        float avg = sum / (framesRead * decoder.outputChannels);
+        std::cout << "Volume: " << avg << "\n";
+
+        // 1/60 sec delay
+        // not necessary for pre-processing
+        // int64_t t1 = currentTimeMs() + (1000.0 / UPS);
+        // while (currentTimeMs() < t1);
+    }
+
+    ma_decoder_uninit(&decoder);
     return 0;
 }

@@ -86,19 +86,53 @@ CMakeFiles/MyGLFWApp.dir/version0/window.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/MyGLFWApp.dir/version0/window.cpp.s"
 	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi Project\version0\window.cpp" -o CMakeFiles\MyGLFWApp.dir\version0\window.cpp.s
 
+CMakeFiles/MyGLFWApp.dir/version0/processedaudio.cpp.obj: CMakeFiles/MyGLFWApp.dir/flags.make
+CMakeFiles/MyGLFWApp.dir/version0/processedaudio.cpp.obj: CMakeFiles/MyGLFWApp.dir/includes_CXX.rsp
+CMakeFiles/MyGLFWApp.dir/version0/processedaudio.cpp.obj: C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/processedaudio.cpp
+CMakeFiles/MyGLFWApp.dir/version0/processedaudio.cpp.obj: CMakeFiles/MyGLFWApp.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi Project\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/MyGLFWApp.dir/version0/processedaudio.cpp.obj"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MyGLFWApp.dir/version0/processedaudio.cpp.obj -MF CMakeFiles\MyGLFWApp.dir\version0\processedaudio.cpp.obj.d -o CMakeFiles\MyGLFWApp.dir\version0\processedaudio.cpp.obj -c "C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi Project\version0\processedaudio.cpp"
+
+CMakeFiles/MyGLFWApp.dir/version0/processedaudio.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/MyGLFWApp.dir/version0/processedaudio.cpp.i"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi Project\version0\processedaudio.cpp" > CMakeFiles\MyGLFWApp.dir\version0\processedaudio.cpp.i
+
+CMakeFiles/MyGLFWApp.dir/version0/processedaudio.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/MyGLFWApp.dir/version0/processedaudio.cpp.s"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi Project\version0\processedaudio.cpp" -o CMakeFiles\MyGLFWApp.dir\version0\processedaudio.cpp.s
+
+CMakeFiles/MyGLFWApp.dir/version0/miniaudio_impl.cpp.obj: CMakeFiles/MyGLFWApp.dir/flags.make
+CMakeFiles/MyGLFWApp.dir/version0/miniaudio_impl.cpp.obj: CMakeFiles/MyGLFWApp.dir/includes_CXX.rsp
+CMakeFiles/MyGLFWApp.dir/version0/miniaudio_impl.cpp.obj: C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/miniaudio_impl.cpp
+CMakeFiles/MyGLFWApp.dir/version0/miniaudio_impl.cpp.obj: CMakeFiles/MyGLFWApp.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi Project\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/MyGLFWApp.dir/version0/miniaudio_impl.cpp.obj"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/MyGLFWApp.dir/version0/miniaudio_impl.cpp.obj -MF CMakeFiles\MyGLFWApp.dir\version0\miniaudio_impl.cpp.obj.d -o CMakeFiles\MyGLFWApp.dir\version0\miniaudio_impl.cpp.obj -c "C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi Project\version0\miniaudio_impl.cpp"
+
+CMakeFiles/MyGLFWApp.dir/version0/miniaudio_impl.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/MyGLFWApp.dir/version0/miniaudio_impl.cpp.i"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi Project\version0\miniaudio_impl.cpp" > CMakeFiles\MyGLFWApp.dir\version0\miniaudio_impl.cpp.i
+
+CMakeFiles/MyGLFWApp.dir/version0/miniaudio_impl.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/MyGLFWApp.dir/version0/miniaudio_impl.cpp.s"
+	C:\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi Project\version0\miniaudio_impl.cpp" -o CMakeFiles\MyGLFWApp.dir\version0\miniaudio_impl.cpp.s
+
 # Object files for target MyGLFWApp
 MyGLFWApp_OBJECTS = \
-"CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj"
+"CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj" \
+"CMakeFiles/MyGLFWApp.dir/version0/processedaudio.cpp.obj" \
+"CMakeFiles/MyGLFWApp.dir/version0/miniaudio_impl.cpp.obj"
 
 # External object files for target MyGLFWApp
 MyGLFWApp_EXTERNAL_OBJECTS =
 
 MyGLFWApp.exe: CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj
+MyGLFWApp.exe: CMakeFiles/MyGLFWApp.dir/version0/processedaudio.cpp.obj
+MyGLFWApp.exe: CMakeFiles/MyGLFWApp.dir/version0/miniaudio_impl.cpp.obj
 MyGLFWApp.exe: CMakeFiles/MyGLFWApp.dir/build.make
 MyGLFWApp.exe: CMakeFiles/MyGLFWApp.dir/linkLibs.rsp
 MyGLFWApp.exe: CMakeFiles/MyGLFWApp.dir/objects1.rsp
 MyGLFWApp.exe: CMakeFiles/MyGLFWApp.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi Project\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable MyGLFWApp.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi Project\build\CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable MyGLFWApp.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\MyGLFWApp.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

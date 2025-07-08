@@ -1,4 +1,8 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/MyGLFWApp.dir/version0/miniaudio_impl.cpp.obj"
+  "CMakeFiles/MyGLFWApp.dir/version0/miniaudio_impl.cpp.obj.d"
+  "CMakeFiles/MyGLFWApp.dir/version0/processedaudio.cpp.obj"
+  "CMakeFiles/MyGLFWApp.dir/version0/processedaudio.cpp.obj.d"
   "CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj"
   "CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj.d"
   "MyGLFWApp.exe"

@@ -128,6 +128,54 @@ MyGLFWApp/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyGLFWApp.dir\build.make CMakeFiles/MyGLFWApp.dir/build
 .PHONY : MyGLFWApp/fast
 
+version0/miniaudio_impl.obj: version0/miniaudio_impl.cpp.obj
+.PHONY : version0/miniaudio_impl.obj
+
+# target to build an object file
+version0/miniaudio_impl.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyGLFWApp.dir\build.make CMakeFiles/MyGLFWApp.dir/version0/miniaudio_impl.cpp.obj
+.PHONY : version0/miniaudio_impl.cpp.obj
+
+version0/miniaudio_impl.i: version0/miniaudio_impl.cpp.i
+.PHONY : version0/miniaudio_impl.i
+
+# target to preprocess a source file
+version0/miniaudio_impl.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyGLFWApp.dir\build.make CMakeFiles/MyGLFWApp.dir/version0/miniaudio_impl.cpp.i
+.PHONY : version0/miniaudio_impl.cpp.i
+
+version0/miniaudio_impl.s: version0/miniaudio_impl.cpp.s
+.PHONY : version0/miniaudio_impl.s
+
+# target to generate assembly for a file
+version0/miniaudio_impl.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyGLFWApp.dir\build.make CMakeFiles/MyGLFWApp.dir/version0/miniaudio_impl.cpp.s
+.PHONY : version0/miniaudio_impl.cpp.s
+
+version0/processedaudio.obj: version0/processedaudio.cpp.obj
+.PHONY : version0/processedaudio.obj
+
+# target to build an object file
+version0/processedaudio.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyGLFWApp.dir\build.make CMakeFiles/MyGLFWApp.dir/version0/processedaudio.cpp.obj
+.PHONY : version0/processedaudio.cpp.obj
+
+version0/processedaudio.i: version0/processedaudio.cpp.i
+.PHONY : version0/processedaudio.i
+
+# target to preprocess a source file
+version0/processedaudio.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyGLFWApp.dir\build.make CMakeFiles/MyGLFWApp.dir/version0/processedaudio.cpp.i
+.PHONY : version0/processedaudio.cpp.i
+
+version0/processedaudio.s: version0/processedaudio.cpp.s
+.PHONY : version0/processedaudio.s
+
+# target to generate assembly for a file
+version0/processedaudio.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\MyGLFWApp.dir\build.make CMakeFiles/MyGLFWApp.dir/version0/processedaudio.cpp.s
+.PHONY : version0/processedaudio.cpp.s
+
 version0/window.obj: version0/window.cpp.obj
 .PHONY : version0/window.obj
 
@@ -161,6 +209,12 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... MyGLFWApp
+	@echo ... version0/miniaudio_impl.obj
+	@echo ... version0/miniaudio_impl.i
+	@echo ... version0/miniaudio_impl.s
+	@echo ... version0/processedaudio.obj
+	@echo ... version0/processedaudio.i
+	@echo ... version0/processedaudio.s
 	@echo ... version0/window.obj
 	@echo ... version0/window.i
 	@echo ... version0/window.s
