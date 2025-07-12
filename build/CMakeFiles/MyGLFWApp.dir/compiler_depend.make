@@ -232,6 +232,8 @@ CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj: C:/Users/david/OneDrive/Deskto
   c:/mingw/include/stdint.h \
   c:/mingw/include/stdio.h \
   c:/mingw/include/stdlib.h \
+  c:/mingw/include/string.h \
+  c:/mingw/include/strings.h \
   c:/mingw/include/sys/stat.h \
   c:/mingw/include/sys/types.h \
   c:/mingw/include/sys/types.h \
@@ -240,10 +242,12 @@ CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj: C:/Users/david/OneDrive/Deskto
   c:/mingw/include/wchar.h \
   c:/mingw/include/wctype.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/algorithm \
+  c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/atomic \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/backward/binders.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/algorithmfwd.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/alloc_traits.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/allocator.h \
+  c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/atomic_base.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/atomic_lockfree_defines.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/basic_ios.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/basic_ios.tcc \
@@ -303,6 +307,7 @@ CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj: C:/Users/david/OneDrive/Deskto
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/cstdint \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/cstdio \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/cstdlib \
+  c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/cstring \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/ctime \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/cwchar \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/cwctype \
@@ -730,7 +735,11 @@ C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/point.h:
 
 C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/processedaudio.h:
 
+c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/atomic:
+
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/algorithmfwd.h:
+
+c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/atomic_base.h:
 
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/sstream.tcc:
 
@@ -743,6 +752,8 @@ c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/stl_relops.h:
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/stl_uninitialized.h:
 
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/uniform_int_dist.h:
+
+c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/cstring:
 
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/sstream:
 

@@ -20,3 +20,9 @@ template <typename T>
 T clamp(T val, T minVal, T maxVal) {
     return std::max(minVal, std::min(val, maxVal));
 }
+float getMax(float a, float b) {
+    return std::max(a, b);
+}
+float getMin(float a, float b) {
+    return std::min(a, b);
+}

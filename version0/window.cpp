@@ -11,15 +11,24 @@
 #include <cmath>
 #include "processedaudio.h"
 #include <algorithm>
+#include <atomic>
+#include <cstring>
+std::atomic<float> g_currentVolume(0.0f);
+
+const char* audioFileName = "./version0/audio.wav";
+const char* outputFileName = "./version0/output.";
 
 constexpr float MAX_INTENSITY = 1.0f;
-constexpr float MAX_LIGHT_REACH = 100.0f;
+constexpr float MAX_LIGHT_REACH = 110.0f;
 constexpr int HEIGHT = 480;
 constexpr int WIDTH = 720;
-constexpr int FLIT_COUNT = 10;
-constexpr int NEW_FRAME_PARTICLES = 8;
+constexpr int FLIT_COUNT = 3;
+constexpr int NEW_FRAME_PARTICLES = 15;
+constexpr int FRAMERATE = 60;
+constexpr int VOLUME_MULT = 4;
 GLuint screenTexID;
 std::vector<uint8_t> pixelBuffer(WIDTH * HEIGHT * 3);
+ma_decoder decoder;
 
 /*All Flits start out in the center of the screen.*/
 std::vector<Flit> getFlits(int count) {
@@ -33,7 +42,7 @@ std::vector<Flit> getFlits(int count) {
     for(int i =0; i < count;i++) {
         for(int j = 0; j < count; j++) {
             if(i != j) {
-                GeomLineRef ref = GeomLineRef(flits[j].getXYRef(), flits[j].radius, true);
+                GeomLineRef ref = GeomLineRef(flits[j].getXYRef(), flits[j].getRadius(), true);
                 flits[i].obstacles.push_back(ref);
             }
         }
@@ -62,7 +71,11 @@ public:
     double x = 0;
     int frames = 0;
     int64_t t1 = currentTimeMs();
-    int64_t second_out = currentTimeMs() + 1000;
+    int64_t frame_out = t1 + (1000.0f/FRAMERATE);
+    int64_t second_out = t1 + 1000;
+    bool hasRenderedAtLeastOnce = false;
+    float lastVol = 0;
+    int sameVolCount = 0;
 
     int particleCount = 0;
     
@@ -105,7 +118,7 @@ void drawFlitCircle(const Flit& flit) {
     glColor3f(1.0f,1.0f,1.0f); // WHITE
     const float x = flit.getX();
     const float y = flit.getY();
-    const float radius = flit.radius;
+    const float radius = flit.getRadius();
 }
 /* Draws particles to w.pixels, NOT directly to the screen*/
 void drawParticles(Window& w, std::vector<Particle>& ps) {
@@ -119,11 +132,11 @@ void drawParticles(Window& w, std::vector<Particle>& ps) {
     for (Particle& p : ps) {
         int intx = (int)p.x;
         int inty = (int)p.y;
+
         // always pick the brighter intensity
         if (w.getPixel(intx, inty) < p.intensity * 100) {
             w.setPixel(intx, inty, p.intensity * 100);
         }
-    
         //update pixel for future draws
         p.update();
     }
@@ -141,13 +154,25 @@ void drawAndFadePixels(Window& w) {
                 // DIMMING
                 w.setPixel(x, y, i - 1);
                 // DRAWING
+                // my super special, epictacular light equation
                 i = i * i * (i / 500000.0f);
-                float value = std::min(i, 1.0f);
-                uint8_t gray = static_cast<uint8_t>(value * 255.0f);
+                float value = getMin(i, 1.0f);
+                uint8_t g = static_cast<uint8_t>(value * 255.0f);
+                uint8_t red = static_cast<uint8_t>(((-500.f * (g+2))/((g+2)*(g+2))) + 255 - (.99*g));
+                // uint8_t red2 = static_cast<uint8_t>(((-10000.f * (g+21.9))/((g+22.1)*(g+22.1))) + 450 - (1.62*g));
+                uint8_t b = g;
+                if (g > 150) {
+                    if (g >= 255) {
+                        b= 205;
+                    } else {
+
+                        b = 150;
+                    }
+                }
                 int index = (y * WIDTH + x) * 3;
-                pixelBuffer[index + 0] = gray;
-                pixelBuffer[index + 1] = gray;
-                pixelBuffer[index + 2] = gray;
+                pixelBuffer[index + 0] = g;
+                pixelBuffer[index + 1] = g;
+                pixelBuffer[index + 2] = b;
 
             } else {
                 int index = (y * WIDTH + x) * 3;
@@ -178,22 +203,20 @@ float distBetween(int x1, int y1, int x2, int y2) {
     float dx = x2 - x1;
     float dy = y2 - y1;
     float dist = std::sqrt(dx * dx + dy * dy);
-    dist = std::min(MAX_LIGHT_REACH, dist);
+    dist = getMin(MAX_LIGHT_REACH, dist);
     return dist;
 }
 /* Draws onto w.pixels. Brightens up a circular section of the screen */
-void drawLight(Window& w, int x, int y, int radius) {
-    // no point should get darker because of this
+void drawLight(Window& w, int x, int y, float radius) {
+    // no point will get darker because of this
     w.setPixel(x, y, MAX_INTENSITY);
-    int blockRadius = MAX_LIGHT_REACH;
+    int blockRadius = getMin(MAX_LIGHT_REACH,  MAX_LIGHT_REACH * radius * VOLUME_MULT);
     // draw a whole gradient circle around it
     for (int sy = -blockRadius; sy <= blockRadius; ++sy) {
         for (int sx = -blockRadius; sx <= blockRadius; ++sx) {
             float intensity = blockRadius - distBetween(x,y,x+sx,y+sy);
             if (y + sy > 0 && y + sy < HEIGHT && x + sx > 0 && x + sx < WIDTH) {
-                if (w.getPixel(x+sx, y+sy) < intensity) {
-                    w.setPixel(x+sx, y+sy, intensity);
-                }
+                w.setPixel(x+sx, y+sy, getMax(w.getPixel(x+sx, y+sy), intensity));
             }
         }
     }
@@ -209,10 +232,9 @@ void spawnParticlesAtFlit(Flit& flit, std::vector<Particle>& particles, int coun
         Particle p = Particle(flit.getX(), flit.getY(), 1, flit.getDir(), MAX_INTENSITY, 750);
         particles.push_back(p);
         for(int j = 0; j < 4; j++) {
-            int x = flit.getX() + (flit.boxRadius * std::cos(flit.getDir() + (PI_2 * j)));
-            int y = flit.getY() + (flit.boxRadius * std::sin(flit.getDir() + (PI_2 * j)));
-            Particle p = Particle(x, y,
-                1, flit.getDir(), MAX_INTENSITY, 250);
+            int x = flit.getX() + (flit.getRadius() * std::cos(flit.getDir() + (PI_2 * j)));
+            int y = flit.getY() + (flit.getRadius() * std::sin(flit.getDir() + (PI_2 * j)));
+            Particle p = Particle(x, y, 1, flit.getDir(), MAX_INTENSITY, 250);
             particles.push_back(p);
         }
         if (flit.explode) {
@@ -267,10 +289,10 @@ GLFWwindow* initGLFWWindow() {
 
     return window;
 }
-void trackSpeed(Window& w) {
+void printSecondInfo(Window& w, int volI) {
     w.t1 = currentTimeMs();
     if (w.t1 > w.second_out) {
-        std::cout << (w.frames) << " fps" << std::endl;
+        std::cout << (w.frames) << " fps, " << volI << " total frames" <<std::endl;
         w.second_out = w.t1 + 1000;
         w.frames = 0;
     }
@@ -309,7 +331,7 @@ void affectParticles(const Flit& flit, Window& w, std::vector<Particle>& particl
                                        std::cos(angleToCenter - p.direction));
             p.direction += dirDiff * blend * 4.5f;
 
-            p.speed = std::min((1 - blend) * p.speed + blend * fspeed, 1.0f);
+            p.speed = getMin((1 - blend) * p.speed + blend * fspeed, 1.0f);
         }
     }
 }
@@ -322,36 +344,72 @@ void initTexture() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
+bool frameTooSoon(Window& w) {
+    w.t1 = currentTimeMs();
+
+    // Force the first frame through, even if it's "too soon"
+    if (!w.hasRenderedAtLeastOnce) {
+        w.frame_out = w.t1 + (1000 / FRAMERATE);
+        w.hasRenderedAtLeastOnce = true;
+        return false;
+    }
+
+    if (w.t1 >= w.frame_out) {
+        w.frame_out = w.t1 + (1000 / FRAMERATE);
+        return false;
+    }
+    return true;
+}
+
 int liveRender() {
     Window w = Window();
     std::vector<Flit> flits = getFlits(FLIT_COUNT);
     std::vector<Particle> particles = {};
+    int volI = 0;
 
     GLFWwindow* window = initGLFWWindow();
     initTexture();
 
     // PRINT LOOP
-    while (!glfwWindowShouldClose(window)) {
+    float vol;
+    // the volume never hits 0, but it does flatten to a very very small number
+    // we'll look for a flattening to see when the song ends
+    while (!glfwWindowShouldClose(window) && w.sameVolCount < 10) {
 
-        trackSpeed(w);
+        // lock to given framerate
+        while (frameTooSoon(w)) {
+            glfwWaitEventsTimeout(0.001);
+        }
+        printSecondInfo(w, volI);
 
-        // clearScreen();
+        // clearScreen(); //unnecessary
 
         // Begin drawing
         drawParticles(w, particles);
         cullBlackPixels(particles);
         
         // update Flits
+        w.lastVol = vol;
+        vol = g_currentVolume.load(std::memory_order_relaxed);
+        if (w.lastVol == vol) {
+            w.sameVolCount++;
+        } else {
+            w.sameVolCount = 0;
+            vol = (w.lastVol + vol)/2;
+        }
+        // std::cout<< vol << " ";
         for(int i = 0; i < flits.size(); i++){
             Flit &flit = flits[i];
+            flit.setRadius(vol);
             flit.nextPos();
             affectParticles(flit, w, particles);
             spawnParticlesAtFlit(flit, particles, NEW_FRAME_PARTICLES);
-            drawLight(w, (int)flit.getX(), (int)flit.getY(), (int)MAX_INTENSITY);
+            drawLight(w, (int)flit.getX(), (int)flit.getY(), vol);
         }
         
         drawAndFadePixels(w);
         loadNextScreen(window);
+        volI++;
 
         // DEBUG LINE
         // std::cout << particles[0].toString() << std::endl;
@@ -360,57 +418,79 @@ int liveRender() {
     glfwDestroyWindow(window);
     glfwTerminate();
 }
-int main() {
-    // liveRender();
-    // ProcessedAudio pa = ProcessedAudio("audio.wav");
-    // pa.run();
-    const char* audioFileName = "./version0/audio.wav";
 
+void audio_callback(ma_device* device, void* output, const void* input, ma_uint32 frameCount) {
+    ma_decoder* decoder = (ma_decoder*)device->pUserData;
+
+    ma_uint64 framesRead = 0;
+    ma_result result = ma_decoder_read_pcm_frames(decoder, output, frameCount, &framesRead);
+
+    if (result != MA_SUCCESS || framesRead == 0) {
+        // Fill remaining with silence
+        memset(output, 0, frameCount * device->playback.channels * sizeof(float));
+        return;
+    }
+
+    float* samples = (float*)output;
+    float maxVol = 0.0f;
+    for (ma_uint64 i = 0; i < framesRead * device->playback.channels; ++i) {
+        maxVol = getMax(maxVol, std::fabs(samples[i]));
+    }
+
+    g_currentVolume.store(maxVol, std::memory_order_relaxed);
+
+    // Fill any remaining part if underrun
+    if (framesRead < frameCount) {
+        memset(samples + framesRead * device->playback.channels, 0,
+                    (frameCount - framesRead) * device->playback.channels * sizeof(float));
+    }
+}
+
+int main() {
+    //////////////////////
+    // AUDIO PROCESSING //
+    //////////////////////
+
+    // Force decoder to output float32 format
     ma_decoder_config config = ma_decoder_config_init(ma_format_f32, 0, 0);
-    ma_decoder decoder;
     ma_result result = ma_decoder_init_file(audioFileName, &config, &decoder);
     if (result != MA_SUCCESS) {
         std::cerr << "Failed to load audio file.\n";
         return -1;
     }
 
-    std::cout << "Decoder ready. Channels: " << decoder.outputChannels
-              << ", Format: " << decoder.outputFormat << "\n";
+    // Configure playback device with float32 format
+    ma_device_config deviceConfig = ma_device_config_init(ma_device_type_playback);
+    deviceConfig.playback.format   = ma_format_f32;
+    deviceConfig.playback.channels = decoder.outputChannels;
+    deviceConfig.sampleRate        = decoder.outputSampleRate;
+    deviceConfig.dataCallback      = audio_callback;
+    deviceConfig.pUserData         = &decoder;
 
-    const int UPS = 30;
-    float buffer[decoder.outputChannels * 1024];
-
-    while (true) {
-        std::fill(buffer, buffer + 1024, 0.0f); // optional
-
-        ma_uint64 framesRead = 0;
-        result = ma_decoder_read_pcm_frames(&decoder, buffer, 1024, &framesRead);
-        if (result != MA_SUCCESS) {
-            std::cerr << "Decoder read failed.\n";
-            break;
-        }
-
-        if (framesRead == 0 || decoder.outputChannels == 0) {
-            std::cout << "No more frames.\n";
-            break;
-        }
-
-        std::cout << "Frames read: " << framesRead << "\n";
-
-        float sum = 0.0f;
-        for (ma_uint64 i = 0; i < framesRead * decoder.outputChannels; ++i) {
-            sum += std::fabs(buffer[i]);
-        }
-
-        float avg = sum / (framesRead * decoder.outputChannels);
-        std::cout << "Volume: " << avg << "\n";
-
-        // 1/60 sec delay
-        // not necessary for pre-processing
-        // int64_t t1 = currentTimeMs() + (1000.0 / UPS);
-        // while (currentTimeMs() < t1);
+    // Initialize playback device
+    ma_device device;
+    result = ma_device_init(NULL, &deviceConfig, &device);
+    if (result != MA_SUCCESS) {
+        std::cerr << "Failed to initialize playback device.\n";
+        ma_decoder_uninit(&decoder);
+        return -1;
     }
 
+    // Start playback
+    result = ma_device_start(&device);
+    if (result != MA_SUCCESS) {
+        std::cerr << "Failed to start playback device.\n";
+        ma_device_uninit(&device);
+        ma_decoder_uninit(&decoder);
+        return -1;
+    }
+
+    // Run visualizer
+    liveRender();
+
+    // Cleanup
+    ma_device_uninit(&device);
     ma_decoder_uninit(&decoder);
+
     return 0;
 }

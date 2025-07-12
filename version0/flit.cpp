@@ -24,8 +24,15 @@ public:
     float getY() const {
         return globalPos.y;
     }
+    float getBoxRadius() {
+        return boxRadius;
+    }
     float getRadius() const {
         return radius;
+    }
+    float setRadius(float r) {
+        radius = r;
+        boxRadius = std::sqrt((radius*radius)/2);
     }
     void updateOscOffset(float oscOffset) {
         this->oscOffset = oscOffset;
@@ -163,14 +170,13 @@ public:
         timeAlive += 1;
         
     }
-    
-    float radius = 15;
-    float boxRadius = std::sqrt((radius*radius)/2);
     float speed = 4;
     std::vector<GeomLineRef> obstacles = {};
     bool explode = false;
     
-    private:
+private:
+    float radius = 15;
+    float boxRadius = std::sqrt((radius*radius)/2);
     bool turnLeft;
     // This is the point the flit oscillates around
     Point spawnPoint;
