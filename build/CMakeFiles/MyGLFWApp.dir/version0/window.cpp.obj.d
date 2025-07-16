@@ -117,14 +117,15 @@ CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj: \
  C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi\ Project\version0\point.h \
  C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi\ Project\version0\geomlineref.cpp \
  C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi\ Project\version0\myath.h \
+ c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\array \
+ c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\utility \
+ c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\bits\stl_relops.h \
  C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi\ Project\version0\particle.cpp \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\sstream \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\bits\sstream.tcc \
  C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi\ Project\version0\processedaudio.h \
  C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi\ Project\version0\miniaudio.h \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\algorithm \
- c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\utility \
- c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\bits\stl_relops.h \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\bits\stl_algo.h \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\bits\algorithmfwd.h \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\bits\stl_heap.h \

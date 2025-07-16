@@ -161,10 +161,11 @@ public:
         globalPos.x += getDX() + dxO;
         globalPos.y += getDY() + dyO;
         
+        // TURNING IS ALL WRONG ANYHOW
         if(turnLeft) {
-            addDir(.005);
+            addDir(.05);
         } else {
-            addDir(-.005);
+            addDir(-.05);
         }
         oscOffset = std::sin(timeAlive/5.0f);
         timeAlive += 1;

@@ -242,6 +242,7 @@ CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj: C:/Users/david/OneDrive/Deskto
   c:/mingw/include/wchar.h \
   c:/mingw/include/wctype.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/algorithm \
+  c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/array \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/atomic \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/backward/binders.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/algorithmfwd.h \
@@ -741,6 +742,8 @@ C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/myath.h:
 C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/point.h:
 
 C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/processedaudio.h:
+
+c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/array:
 
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/atomic:
 

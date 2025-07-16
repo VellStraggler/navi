@@ -10,6 +10,7 @@
 #include "particle.cpp"
 #include <cmath>
 #include "processedaudio.h"
+#include "myath.h"
 #include <algorithm>
 #include <atomic>
 #include <cstring>
@@ -26,13 +27,15 @@ constexpr int HEIGHT = 480;
 constexpr int WIDTH = 720;
 constexpr int FLIT_COUNT = 3;
 constexpr int NEW_FRAME_PARTICLES = 15;
-constexpr int FRAMERATE = 30; // rendered video is still fixed to 30 :/
+constexpr int FRAMERATE = 60; // rendered video is still fixed to 30 :/
 constexpr int VOLUME_MULT = 4;
 
 // unused
-constexpr uint8_t COLOR1[] = {100,100,100};
-constexpr uint8_t COLOR2[] = {100,100,100};
-constexpr uint8_t COLOR3[] = {100,100,100};
+
+constexpr uint8_t COLOR1[] = {255,100,100};
+constexpr uint8_t COLOR2[] = {100,255,100};
+constexpr uint8_t COLOR3[] = {127,127,255};
+
 
 constexpr bool RENDER = false;
 
@@ -46,6 +49,13 @@ cmake --build build
 ffmpeg -framerate 30 -i version0/frames/frame_%05d.ppm -i version0/audio.wav -c:v libx264 -pix_fmt yuv420p -c:a aac -shortest version0/output.mp4
 
 /* -------- */
+
+constexpr uint8_t BLACK[] = {0,0,0};
+constexpr uint8_t WHITE[] = {25,255,255};
+
+uint8_t R_INDEX[256]; 
+uint8_t G_INDEX[256]; 
+uint8_t B_INDEX[256];
 
 std::atomic<float> g_currentVolume(0.0f);
 GLuint screenTexID;
@@ -180,21 +190,21 @@ void drawAndFadePixels(Window& w) {
                 i = i * i * (i / 500000.0f);
                 float value = getMin(i, 1.0f);
                 uint8_t g = static_cast<uint8_t>(value * 255.0f);
-                uint8_t red = static_cast<uint8_t>(((-500.f * (g+2))/((g+2)*(g+2))) + 255 - (.99*g));
+                // uint8_t red = static_cast<uint8_t>(((-500.f * (g+2))/((g+2)*(g+2))) + 255 - (.99*g));
                 // uint8_t red2 = static_cast<uint8_t>(((-10000.f * (g+21.9))/((g+22.1)*(g+22.1))) + 450 - (1.62*g));
-                uint8_t b = g;
-                if (g > 150) {
-                    if (g >= 255) {
-                        b= 205;
-                    } else {
+                // uint8_t b = g;
+                // if (g > 150) {
+                //     if (g >= 255) {
+                //         b= 205;
+                //     } else {
 
-                        b = 150;
-                    }
-                }
+                //         b = 150;
+                //     }
+                // }
                 int index = (y * WIDTH + x) * 3;
-                pixelBuffer[index + 0] = g;
-                pixelBuffer[index + 1] = g;
-                pixelBuffer[index + 2] = b;
+                pixelBuffer[index + 0] = R_INDEX[g];
+                pixelBuffer[index + 1] = G_INDEX[g];
+                pixelBuffer[index + 2] = B_INDEX[g];
 
             } else {
                 int index = (y * WIDTH + x) * 3;
@@ -486,6 +496,9 @@ void audio_callback(ma_device* device, void* output, const void* input, ma_uint3
 }
 
 int main() {
+    // create index sheet for choosing colors quickly from intensity
+    fillColorIndexArrays(R_INDEX, G_INDEX, B_INDEX, COLOR1, COLOR2, COLOR3);
+
     //////////////////////
     // AUDIO PROCESSING //
     //////////////////////
