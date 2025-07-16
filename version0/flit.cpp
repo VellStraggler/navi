@@ -170,7 +170,7 @@ public:
         timeAlive += 1;
         
     }
-    float speed = 4;
+    float speed = 8; // was 4 for 60fps
     std::vector<GeomLineRef> obstacles = {};
     bool explode = false;
     

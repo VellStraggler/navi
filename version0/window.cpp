@@ -13,10 +13,12 @@
 #include <algorithm>
 #include <atomic>
 #include <cstring>
-std::atomic<float> g_currentVolume(0.0f);
+#include <fstream>
+
+/* SETTINGS */
 
 const char* audioFileName = "./version0/audio.wav";
-const char* outputFileName = "./version0/output.";
+const char* outputFileName = "./version0/output.mp4";
 
 constexpr float MAX_INTENSITY = 1.0f;
 constexpr float MAX_LIGHT_REACH = 110.0f;
@@ -24,8 +26,28 @@ constexpr int HEIGHT = 480;
 constexpr int WIDTH = 720;
 constexpr int FLIT_COUNT = 3;
 constexpr int NEW_FRAME_PARTICLES = 15;
-constexpr int FRAMERATE = 60;
+constexpr int FRAMERATE = 30; // rendered video is still fixed to 30 :/
 constexpr int VOLUME_MULT = 4;
+
+// unused
+constexpr uint8_t COLOR1[] = {100,100,100};
+constexpr uint8_t COLOR2[] = {100,100,100};
+constexpr uint8_t COLOR3[] = {100,100,100};
+
+constexpr bool RENDER = false;
+
+/* PROGRAM COMMANDS //
+(from ".../Navi Project")
+
+cmake --build build
+
+./build/MyGLFWAPP.exe
+
+ffmpeg -framerate 30 -i version0/frames/frame_%05d.ppm -i version0/audio.wav -c:v libx264 -pix_fmt yuv420p -c:a aac -shortest version0/output.mp4
+
+/* -------- */
+
+std::atomic<float> g_currentVolume(0.0f);
 GLuint screenTexID;
 std::vector<uint8_t> pixelBuffer(WIDTH * HEIGHT * 3);
 ma_decoder decoder;
@@ -71,7 +93,7 @@ public:
     double x = 0;
     int frames = 0;
     int64_t t1 = currentTimeMs();
-    int64_t frame_out = t1 + (1000.0f/FRAMERATE);
+    double frame_out = t1 + (1000.0/FRAMERATE);
     int64_t second_out = t1 + 1000;
     bool hasRenderedAtLeastOnce = false;
     float lastVol = 0;
@@ -346,19 +368,36 @@ void initTexture() {
 
 bool frameTooSoon(Window& w) {
     w.t1 = currentTimeMs();
+    const double frameDuration = 1000.0 / FRAMERATE;
+    
 
     // Force the first frame through, even if it's "too soon"
     if (!w.hasRenderedAtLeastOnce) {
-        w.frame_out = w.t1 + (1000 / FRAMERATE);
+        // w.frame_out = w.t1 + frameDuration;
         w.hasRenderedAtLeastOnce = true;
         return false;
     }
 
     if (w.t1 >= w.frame_out) {
-        w.frame_out = w.t1 + (1000 / FRAMERATE);
+        w.frame_out += frameDuration;
         return false;
     }
     return true;
+}
+
+void savePixelBufferAsPPM(int frameNumber) {
+    char filename[64];
+    std::snprintf(filename, sizeof(filename), "version0/frames/frame_%05d.ppm", frameNumber);
+    std::ofstream out(filename, std::ios::binary);
+    out << "P6\n" << WIDTH << " " << HEIGHT << "\n255\n";
+
+    // PPM format is top-to-bottom, left-to-right, RGB
+    // pixelBuffer is already in that format but upside-down,
+    // so we flip vertically:
+    for (int y = 0; y < HEIGHT; ++y) {
+        int rowStart = (HEIGHT - 1 - y) * WIDTH * 3;
+        out.write(reinterpret_cast<char*>(&pixelBuffer[rowStart]), WIDTH * 3);
+    }
 }
 
 int liveRender() {
@@ -408,11 +447,11 @@ int liveRender() {
         }
         
         drawAndFadePixels(w);
+        if (RENDER) {
+            savePixelBufferAsPPM(volI);
+        }
         loadNextScreen(window);
         volI++;
-
-        // DEBUG LINE
-        // std::cout << particles[0].toString() << std::endl;
     }
 
     glfwDestroyWindow(window);
