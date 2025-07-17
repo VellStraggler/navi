@@ -217,7 +217,9 @@ CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj: C:/Users/david/OneDrive/Deskto
   C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/particle.cpp \
   C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/point.h \
   C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/processedaudio.h \
+  C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/stb_truetype.h \
   c:/mingw/include/_mingw.h \
+  c:/mingw/include/assert.h \
   c:/mingw/include/ctype.h \
   c:/mingw/include/direct.h \
   c:/mingw/include/errno.h \
@@ -329,6 +331,7 @@ CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj: C:/Users/david/OneDrive/Deskto
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/iostream \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/istream \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/limits \
+  c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/math.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/mingw32/bits/atomic_word.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/mingw32/bits/basic_file.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/mingw32/bits/c++allocator.h \
@@ -347,6 +350,7 @@ CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj: C:/Users/david/OneDrive/Deskto
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/ratio \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/sstream \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/stdexcept \
+  c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/stdlib.h \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/streambuf \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/string \
   c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/system_error \
@@ -705,6 +709,8 @@ c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/iostream:
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/istream:
 
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/stl_vector.h:
+
+C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/stb_truetype.h:
 
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/limits:
 

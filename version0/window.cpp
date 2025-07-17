@@ -3,6 +3,8 @@
 // be in Navi Project, cmd: cmake --build build
 // then cmd: ./build/MyGLFWApp.exe
 
+#define STB_TRUETYPE_IMPLEMENTATION
+#include "stb_truetype.h"
 #include <GLFW/glfw3.h>
 #include <chrono>
 #include <iostream>
@@ -19,17 +21,19 @@
 /* SETTINGS */
 
 const char* audioFileName = "./version0/audio.wav";
+const char* songTitle = "La Vie En Rose";
 const char* outputFileName = "./version0/output.mp4";
 
-constexpr float MAX_INTENSITY = 1.0f;
-constexpr float MAX_LIGHT_REACH = 100.0f;
 constexpr int HEIGHT = 480;
 constexpr int WIDTH = 720;
 constexpr int FLIT_COUNT = 3;
-constexpr int NEW_FRAME_PARTICLES = 15;
 constexpr int FRAMERATE = 60; // rendered video is still fixed to 30 :/
-constexpr int VOLUME_MULT = 4;
 constexpr float TEMPO = 120;
+
+constexpr int NEW_FRAME_PARTICLES = 10;
+constexpr float MAX_INTENSITY = 1.0f;
+constexpr float MAX_LIGHT_REACH = 100.0f;
+constexpr int VOLUME_MULT = 4;
 
 // https://www.rapidtables.com/web/color/RGB_Color.html
 constexpr uint8_t COLOR1[] = {255,255,100};
@@ -56,10 +60,20 @@ uint8_t R_INDEX[256];
 uint8_t G_INDEX[256]; 
 uint8_t B_INDEX[256];
 
+// Global Font Data
+unsigned char ttf_buffer[1<<20];
+unsigned char temp_bitmap[512*512]; // baked bitmap
+stbtt_bakedchar cdata[96]; // ASCII 32..126
+float fontHeight = 48.0f;
+stbtt_fontinfo fontInfo;
+
+// Global Volume Data
 std::atomic<float> g_currentVolume(0.0f);
+ma_decoder decoder;
+
+// Global Image Data
 GLuint screenTexID;
 std::vector<uint8_t> pixelBuffer(WIDTH * HEIGHT * 3);
-ma_decoder decoder;
 
 /*All Flits start out in the center of the screen.*/
 std::vector<Flit> getFlits(int count) {
@@ -79,6 +93,19 @@ std::vector<Flit> getFlits(int count) {
     }
 
     return flits;
+}
+
+void initFont() {
+    FILE* fontFile = fopen("version0/Roboto.ttf", "rb");
+    fread(ttf_buffer, 1, 1<<20, fontFile);
+    fclose(fontFile);
+
+    if (!stbtt_InitFont(&fontInfo, ttf_buffer, 0)) {
+    std::cerr << "Failed to init font\n";
+    // handle error here
+    }
+
+    stbtt_BakeFontBitmap(ttf_buffer, 0, fontHeight, temp_bitmap, 512, 512, 32, 96, cdata);
 }
 
 int64_t currentTimeMs() {
@@ -144,6 +171,65 @@ void drawFlitCircle(const Flit& flit) {
     const float y = flit.getY();
     const float radius = flit.getRadius();
 }
+
+float getTextWidth(const char* text) {
+    float width = 0.0f;
+    for (const char* p = text; *p; ++p) {
+        if (*p >= 32 && *p < 128) {
+            stbtt_bakedchar* b = &cdata[*p - 32];
+            width += b->xadvance;
+        }
+    }
+    return width;
+}
+
+void drawTextToBuffer(Window& w, std::vector<Particle>& ps, const char* text, float startX, float startY, 
+                      float intensity) {
+    
+    float textWidth = getTextWidth(text);
+    float x = startX - textWidth / 2;
+    float y = startY;  // y is baseline, do NOT add ascent or baselineOffset here
+
+    for (; *text; ++text) {
+        if (*text < 32 || *text >= 128) continue; // only ASCII baked chars
+
+        stbtt_bakedchar* b = &cdata[*text - 32];
+        int charWidth = b->x1 - b->x0;
+        int charHeight = b->y1 - b->y0;
+
+        for (int cy = 0; cy < charHeight; ++cy) {
+            for (int cx = 0; cx < charWidth; ++cx) {
+                int bmpX = b->x0 + cx;
+                int bmpY = b->y0 + cy;
+
+                unsigned char alpha = temp_bitmap[bmpY * 512 + bmpX];
+
+                if (alpha > 0) {
+                    int px = static_cast<int>(x + b->xoff) + cx;
+                    int py = static_cast<int>(y + b->yoff) + cy;
+
+                    if (px >= 0 && px < WIDTH && py >= 0 && py < HEIGHT) {
+                        float newIntensity = (alpha / 255.0f) * intensity;
+                        float existing = w.getPixel(px, py);
+                        newIntensity = getMax(existing, newIntensity);
+
+                        if (randFloat(1) > .995) {
+                            float dirFromCenter = atan2(py - HEIGHT/2, px - WIDTH/2);
+                            Particle p = Particle(px,py,.3,dirFromCenter,1.0,300);
+                            ps.push_back(p);
+                            Particle p2 = Particle(px,py,.5,randFloat(PI*2),1.0,300);
+                            ps.push_back(p2);
+                        }
+                        w.setPixel(px, py, 0);
+                    }
+                }
+            }
+        }
+
+        x += b->xadvance;
+    }
+}
+
 /* Draws particles to w.pixels, NOT directly to the screen*/
 void drawParticles(Window& w, std::vector<Particle>& ps) {
     // DEBUG LINE: infrequently give size
@@ -179,7 +265,10 @@ void drawParticles(Window& w, std::vector<Particle>& ps) {
     Draws all pixels to the screen as they are stored in w.pixels.
     Converts linear brightness into a higher contrast version as well.
 */
-void drawAndFadePixels(Window& w) {
+void drawAndFadePixels(Window& w, std::vector<Particle>& ps) {
+
+    drawTextToBuffer(w, ps, songTitle, WIDTH/2, HEIGHT/2, 100.0f);
+
     // fill buffer with our array
     for (int y = 0; y < HEIGHT; ++y) {
         for (int x = 0; x < WIDTH; ++x) {
@@ -459,7 +548,7 @@ int liveRender() {
             drawLight(w, (int)flit.getX(), (int)flit.getY(), vol);
         }
         
-        drawAndFadePixels(w);
+        drawAndFadePixels(w, particles);
         if (RENDER) {
             savePixelBufferAsPPM(volI);
         }
@@ -501,6 +590,7 @@ void audio_callback(ma_device* device, void* output, const void* input, ma_uint3
 int main() {
     // create index sheet for choosing colors quickly from intensity
     fillColorIndexArrays(R_INDEX, G_INDEX, B_INDEX, COLOR1, COLOR2, COLOR3);
+    initFont();
 
     //////////////////////
     // AUDIO PROCESSING //
