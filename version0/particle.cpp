@@ -15,12 +15,12 @@ public:
     float intensity;
     int lifeCycle;
     int timeAlive;
+    int radius = 2;
 
     /* A particle's lifespan is randomized, and it has a set level of deceleration.
     Suggested maxLifeCycle is 750 frames. */
     Particle(float x, float y, float speed, float generalDirection, float intensity, int maxLifeCycle) 
         : x(x), y(y), intensity(intensity) {
-        // this->speed = randFloat(speed/2, speed);
         this->speed = speed;
         // improves particle spread
         this->direction = randFloat(generalDirection-(PI_2), generalDirection + (PI-2));
@@ -32,9 +32,7 @@ public:
         ss << "(" << x << ", " << y << ") speed: " << speed << ", dir: " << toDegrees(direction) << "*, intensity: " << intensity;
         return ss.str();
     }
-    void update() {
-        // DEBUG LINE
-        // speed = 1;
+    void update(float volume) {
         // decrease color based on life cycle
         // black particles will be culled
         if (intensity < .5) {
@@ -50,8 +48,11 @@ public:
 
         // These will be implemented to affect the pixels more when
         // song gets more volatile
-        // y += ((std::rand() % 11) - 5)/5;
-        // x += ((std::rand() % 11) - 5)/5;
+        if (volume > .2) {
+            float volMult = volume * 2;
+            y += randFloat(-volMult,volMult);
+            x += randFloat(-volMult,volMult);
+        }
         
         speed *= DECEL;
         timeAlive++;

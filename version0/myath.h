@@ -28,6 +28,12 @@ float getMax(float a, float b) {
 float getMin(float a, float b) {
     return std::min(a, b);
 }
+float getDistance(float x, float y, float x2, float y2) {
+    return (sqrt((x2-x)*(x2-x) + (y2-y)*(y2-y)));
+}
+
+
+
 
 void fillColorIndexArrays(
     uint8_t (&rIndex)[256],

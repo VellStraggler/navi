@@ -29,13 +29,12 @@ constexpr int FLIT_COUNT = 3;
 constexpr int NEW_FRAME_PARTICLES = 15;
 constexpr int FRAMERATE = 60; // rendered video is still fixed to 30 :/
 constexpr int VOLUME_MULT = 4;
+constexpr float TEMPO = 120;
 
-// unused
-
+// https://www.rapidtables.com/web/color/RGB_Color.html
 constexpr uint8_t COLOR1[] = {255,100,100};
 constexpr uint8_t COLOR2[] = {100,255,100};
 constexpr uint8_t COLOR3[] = {127,127,255};
-
 
 constexpr bool RENDER = false;
 
@@ -74,19 +73,19 @@ std::vector<Flit> getFlits(int count) {
     for(int i =0; i < count;i++) {
         for(int j = 0; j < count; j++) {
             if(i != j) {
-                GeomLineRef ref = GeomLineRef(flits[j].getXYRef(), flits[j].getRadius(), true);
-                flits[i].obstacles.push_back(ref);
+                // GeomLineRef ref = GeomLineRef(flits[j].getXYRef(), flits[j].getRadius(), true);
+                flits[i].obstacles.push_back(flits[j]);
             }
         }
         // walls
         // add screen edges as collision points
-        Point topLeft(0, HEIGHT);
-        Point bottomLeft(0,0);
-        Point bottomRight(WIDTH,0);
-        flits[i].obstacles.push_back(GeomLineRef(bottomLeft, WIDTH, false));
-        flits[i].obstacles.push_back(GeomLineRef(topLeft, WIDTH, false));
-        flits[i].obstacles.push_back(GeomLineRef(bottomLeft, HEIGHT, true));
-        flits[i].obstacles.push_back(GeomLineRef(bottomRight, HEIGHT, true));
+        // Point topLeft(0, HEIGHT);
+        // Point bottomLeft(0,0);
+        // Point bottomRight(WIDTH,0);
+        // flits[i].obstacles.push_back(GeomLineRef(bottomLeft, WIDTH, false));
+        // flits[i].obstacles.push_back(GeomLineRef(topLeft, WIDTH, false));
+        // flits[i].obstacles.push_back(GeomLineRef(bottomLeft, HEIGHT, true));
+        // flits[i].obstacles.push_back(GeomLineRef(bottomRight, HEIGHT, true));
     }
 
     return flits;
@@ -107,9 +106,11 @@ public:
     int64_t second_out = t1 + 1000;
     bool hasRenderedAtLeastOnce = false;
     float lastVol = 0;
-    int sameVolCount = 0;
+    int sameVolCount = 0; // at 10: rudimentary way to know when the song is over
 
     int particleCount = 0;
+
+    float currentVolume;
     
     float getPixel(int x, int y) const {
         if(x < 1 || x > WIDTH -1 || y < 1 || y > HEIGHT -1) {
@@ -124,6 +125,7 @@ public:
         }
     }
     Window() = default;
+
 private:
     /*Stores all pixels (y,x format) as an intensity number from 0f to 1.0f*/
     float pixels[HEIGHT][WIDTH] = {0.0f};
@@ -165,12 +167,22 @@ void drawParticles(Window& w, std::vector<Particle>& ps) {
         int intx = (int)p.x;
         int inty = (int)p.y;
 
-        // always pick the brighter intensity
+        
+        if (p.radius > 1) {
+            for (int x = intx - 1; x < intx + 1; x++) {
+                for (int y = inty - 1; y < inty + 1; y++) {
+                    if (w.getPixel(x, y) < p.intensity * 80) {
+                        w.setPixel(x, y, p.intensity * 80);
+                    }
+                }
+            }
+        }
         if (w.getPixel(intx, inty) < p.intensity * 100) {
             w.setPixel(intx, inty, p.intensity * 100);
         }
+        // always pick the brighter intensity
         //update pixel for future draws
-        p.update();
+        p.update(w.currentVolume);
     }
 }
 /* 
@@ -257,11 +269,11 @@ void drawLight(Window& w, int x, int y, float radius) {
 /*Create a count of particles matching a flit in direction
     and speed (somewhat)
 */
-void spawnParticlesAtFlit(Flit& flit, std::vector<Particle>& particles, int count) {
+void spawnParticlesAtFlit(Flit& flit, std::vector<Particle>& particles, int count, float currentVolume) {
     // default color of white
     for(int i = 0; i < count; i++) {
         // future implementation: volume determines particle speed multiplier
-        Particle p = Particle(flit.getX(), flit.getY(), 1, flit.getDir(), MAX_INTENSITY, 750);
+        Particle p = Particle(flit.getX(), flit.getY(), 1 + currentVolume, flit.getDir(), MAX_INTENSITY, 750);
         particles.push_back(p);
         for(int j = 0; j < 4; j++) {
             int x = flit.getX() + (flit.getRadius() * std::cos(flit.getDir() + (PI_2 * j)));
@@ -446,13 +458,26 @@ int liveRender() {
             w.sameVolCount = 0;
             vol = (w.lastVol + vol)/2;
         }
+        w.currentVolume = vol;
         // std::cout<< vol << " ";
-        for(int i = 0; i < flits.size(); i++){
-            Flit &flit = flits[i];
-            flit.setRadius(vol);
+        float centX = 0;
+        float centY = 0;
+        for(Flit flit: flits) {
+            centX += flit.getX();
+            centY += flit.getY();
+        }
+        float centDx = (WIDTH/2) - (centX/flits.size());
+        float centDy = (HEIGHT/2) - (centY/flits.size());
+
+        for(Flit& flit: flits){
+            // place the shared middle of all Flits in the center of the screen
+            flit.setX(flit.getX() + (centDx * 0.01f));  // small adjustment factor
+            flit.setY(flit.getY() + (centDy * 0.01f));
+
+            flit.implementVolume(vol);
             flit.nextPos();
             affectParticles(flit, w, particles);
-            spawnParticlesAtFlit(flit, particles, NEW_FRAME_PARTICLES);
+            spawnParticlesAtFlit(flit, particles, NEW_FRAME_PARTICLES, vol);
             drawLight(w, (int)flit.getX(), (int)flit.getY(), vol);
         }
         
