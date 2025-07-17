@@ -22,7 +22,7 @@ const char* audioFileName = "./version0/audio.wav";
 const char* outputFileName = "./version0/output.mp4";
 
 constexpr float MAX_INTENSITY = 1.0f;
-constexpr float MAX_LIGHT_REACH = 110.0f;
+constexpr float MAX_LIGHT_REACH = 100.0f;
 constexpr int HEIGHT = 480;
 constexpr int WIDTH = 720;
 constexpr int FLIT_COUNT = 3;
@@ -32,9 +32,9 @@ constexpr int VOLUME_MULT = 4;
 constexpr float TEMPO = 120;
 
 // https://www.rapidtables.com/web/color/RGB_Color.html
-constexpr uint8_t COLOR1[] = {255,100,100};
+constexpr uint8_t COLOR1[] = {255,255,100};
 constexpr uint8_t COLOR2[] = {100,255,100};
-constexpr uint8_t COLOR3[] = {127,127,255};
+constexpr uint8_t COLOR3[] = {127,255,255};
 
 constexpr bool RENDER = false;
 
@@ -73,19 +73,9 @@ std::vector<Flit> getFlits(int count) {
     for(int i =0; i < count;i++) {
         for(int j = 0; j < count; j++) {
             if(i != j) {
-                // GeomLineRef ref = GeomLineRef(flits[j].getXYRef(), flits[j].getRadius(), true);
                 flits[i].obstacles.push_back(flits[j]);
             }
         }
-        // walls
-        // add screen edges as collision points
-        // Point topLeft(0, HEIGHT);
-        // Point bottomLeft(0,0);
-        // Point bottomRight(WIDTH,0);
-        // flits[i].obstacles.push_back(GeomLineRef(bottomLeft, WIDTH, false));
-        // flits[i].obstacles.push_back(GeomLineRef(topLeft, WIDTH, false));
-        // flits[i].obstacles.push_back(GeomLineRef(bottomLeft, HEIGHT, true));
-        // flits[i].obstacles.push_back(GeomLineRef(bottomRight, HEIGHT, true));
     }
 
     return flits;
@@ -194,6 +184,7 @@ void drawAndFadePixels(Window& w) {
     for (int y = 0; y < HEIGHT; ++y) {
         for (int x = 0; x < WIDTH; ++x) {
             float i = w.getPixel(x, y);
+            int index = (y * WIDTH + x) * 3;
             if (i > 0) {
                 // DIMMING
                 w.setPixel(x, y, i - 1);
@@ -202,24 +193,11 @@ void drawAndFadePixels(Window& w) {
                 i = i * i * (i / 500000.0f);
                 float value = getMin(i, 1.0f);
                 uint8_t g = static_cast<uint8_t>(value * 255.0f);
-                // uint8_t red = static_cast<uint8_t>(((-500.f * (g+2))/((g+2)*(g+2))) + 255 - (.99*g));
-                // uint8_t red2 = static_cast<uint8_t>(((-10000.f * (g+21.9))/((g+22.1)*(g+22.1))) + 450 - (1.62*g));
-                // uint8_t b = g;
-                // if (g > 150) {
-                //     if (g >= 255) {
-                //         b= 205;
-                //     } else {
-
-                //         b = 150;
-                //     }
-                // }
-                int index = (y * WIDTH + x) * 3;
                 pixelBuffer[index + 0] = R_INDEX[g];
                 pixelBuffer[index + 1] = G_INDEX[g];
                 pixelBuffer[index + 2] = B_INDEX[g];
 
             } else {
-                int index = (y * WIDTH + x) * 3;
                 pixelBuffer[index + 0] = 0;
                 pixelBuffer[index + 1] = 0;
                 pixelBuffer[index + 2] = 0;
