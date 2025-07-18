@@ -23,7 +23,7 @@ public:
         : x(x), y(y), intensity(intensity) {
         this->speed = speed;
         // improves particle spread
-        this->direction = randFloat(generalDirection-(PI_2/2), generalDirection + (PI-2/2));
+        this->direction = randFloat(generalDirection-(PI_2/4), generalDirection + (PI_2/4));
         lifeCycle = randFloat(maxLifeCycle);
         timeAlive = 0;
     }

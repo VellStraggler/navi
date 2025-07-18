@@ -96,7 +96,7 @@ std::vector<Flit> getFlits(int count) {
 }
 
 void initFont() {
-    FILE* fontFile = fopen("version0/Roboto.ttf", "rb");
+    FILE* fontFile = fopen("version0/Quintessential-Regular.ttf", "rb");
     fread(ttf_buffer, 1, 1<<20, fontFile);
     fclose(fontFile);
 
@@ -183,12 +183,47 @@ float getTextWidth(const char* text) {
     return width;
 }
 
+void makeExplosion(std::vector<Particle>& ps, float x, float y, int time, float speed, float v) {
+    int booms = (40 * speed);
+    if (v == 0) {
+        int booms = 40;
+        for(int j = 0; j < booms; j++) {
+                Particle p = Particle(x, y, speed, j*(twoPI/booms), MAX_INTENSITY, time);
+                p.timeAlive = -30;
+                ps.push_back(p);
+            }
+    }
+    float radiusX = 100.0f; // Horizontal radius
+    float minFrac = 0.1f;
+    float radiusY = 100.0f / (v*10);  // Vertical radius
+
+    for (int i = 0; i < booms; i++) {
+        // Oval radii
+        float a = radiusX;  // horizontal radius
+        float b = radiusY;  // vertical radius
+
+        // Angle for this particle
+        float angle = i * (twoPI / booms);
+
+        // Max distance this particle should travel before dying (oval edge)
+        float maxDist = 1.0f / sqrtf((cosf(angle)*cosf(angle))/(a*a) + (sinf(angle)*sinf(angle))/(b*b));
+
+        // Convert that distance into lifetime
+        float timeAlive = time * .02 * maxDist / speed;
+
+        ps.push_back(Particle(x, y, speed, angle, MAX_INTENSITY, timeAlive));
+    }
+}
+
 void drawTextToBuffer(Window& w, std::vector<Particle>& ps, const char* text, float startX, float startY, 
                       float intensity) {
     
     float textWidth = getTextWidth(text);
     float x = startX - textWidth / 2;
     float y = startY;  // y is baseline, do NOT add ascent or baselineOffset here
+
+    // draw a firework in the middle of this text
+    makeExplosion(ps, startX, startY - (fontHeight/4), 500, .7, 1);
 
     for (; *text; ++text) {
         if (*text < 32 || *text >= 128) continue; // only ASCII baked chars
@@ -212,14 +247,6 @@ void drawTextToBuffer(Window& w, std::vector<Particle>& ps, const char* text, fl
                         float newIntensity = (alpha / 255.0f) * intensity;
                         float existing = w.getPixel(px, py);
                         newIntensity = getMax(existing, newIntensity);
-
-                        if (randFloat(1) > .995) {
-                            float dirFromCenter = atan2(py - HEIGHT/2, px - WIDTH/2);
-                            Particle p = Particle(px,py,.3,dirFromCenter,1.0,300);
-                            ps.push_back(p);
-                            Particle p2 = Particle(px,py,.5,randFloat(PI*2),1.0,300);
-                            ps.push_back(p2);
-                        }
                         w.setPixel(px, py, 0);
                     }
                 }
@@ -350,12 +377,7 @@ void spawnParticlesAtFlit(Flit& flit, std::vector<Particle>& particles, int coun
         }
         if (flit.explode) {
             flit.explode = false;
-            int booms = 100;
-            for(int j = 0; j < booms; j++) {
-                Particle p = Particle(flit.getX(), flit.getY(), 3, j*(twoPI/booms), MAX_INTENSITY, 200);
-                p.timeAlive = -30;
-                particles.push_back(p);
-            }
+            makeExplosion(particles, flit.getX(), flit.getY(), 200, 3, 1);
         }
     }
 }
