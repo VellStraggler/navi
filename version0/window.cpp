@@ -21,12 +21,12 @@
 /* SETTINGS */
 
 const char* audioFileName = "./version0/audio.wav";
-const char* songTitle = "La Vie En Rose";
+const char* songTitle = "I love you Madi";
 const char* outputFileName = "./version0/output.mp4";
 
 constexpr int HEIGHT = 480;
 constexpr int WIDTH = 720;
-constexpr int FLIT_COUNT = 3;
+constexpr int FLIT_COUNT = 6;
 constexpr int FRAMERATE = 60; // rendered video is still fixed to 30 :/
 constexpr float TEMPO = 120;
 
@@ -36,8 +36,8 @@ constexpr float MAX_LIGHT_REACH = 100.0f;
 constexpr int VOLUME_MULT = 4;
 
 // https://www.rapidtables.com/web/color/RGB_Color.html
-constexpr uint8_t COLOR1[] = {255,255,100};
-constexpr uint8_t COLOR2[] = {100,255,100};
+constexpr uint8_t COLOR1[] = {150,200,100};
+constexpr uint8_t COLOR2[] = {50,200,100};
 constexpr uint8_t COLOR3[] = {127,255,255};
 
 constexpr bool RENDER = false;
@@ -266,6 +266,8 @@ void drawParticles(Window& w, std::vector<Particle>& ps) {
             w.particleCount = ps.size();
         }
     }
+    bool newe = false;
+    std::vector<Particle> newParticles;
     for (Particle& p : ps) {
         int intx = (int)p.x;
         int inty = (int)p.y;
@@ -279,6 +281,14 @@ void drawParticles(Window& w, std::vector<Particle>& ps) {
                     }
                 }
             }
+            if (p.timeAlive > 50) {
+                if (randFloat(1) < .02) {
+                    p.radius = 1;
+                    Particle p2 = Particle(p.x, p.y, p.speed, p.direction, p.intensity, p.lifeCycle);
+                    newParticles.push_back(p2);
+                    newe = true;
+                }
+            }
         }
         if (w.getPixel(intx, inty) < p.intensity * 100) {
             w.setPixel(intx, inty, p.intensity * 100);
@@ -286,6 +296,9 @@ void drawParticles(Window& w, std::vector<Particle>& ps) {
         // always pick the brighter intensity
         //update pixel for future draws
         p.update(w.currentVolume);
+    }
+    for(Particle& p: newParticles) {
+        ps.push_back(p);
     }
 }
 /* 
