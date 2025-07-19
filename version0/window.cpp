@@ -3,6 +3,9 @@
 // be in Navi Project, cmd: cmake --build build
 // then cmd: ./build/MyGLFWApp.exe
 
+// MAKE SURE your song is NOT called audio.wav when rendering,
+// as it may be overwritten
+
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
 #include <GLFW/glfw3.h>
@@ -20,8 +23,8 @@
 
 /* SETTINGS */
 
-const char* audioFileName = "./version0/audio.wav";
-const char* songTitle = "I love you Madi";
+const char* audioFileName = "./version0/moon moon.wav";
+const char* songTitle = "moon moon";
 const char* outputFileName = "./version0/output.mp4";
 
 constexpr int HEIGHT = 480;
@@ -36,11 +39,11 @@ constexpr float MAX_LIGHT_REACH = 100.0f;
 constexpr int VOLUME_MULT = 4;
 
 // https://www.rapidtables.com/web/color/RGB_Color.html
-constexpr uint8_t COLOR1[] = {150,200,100};
-constexpr uint8_t COLOR2[] = {50,200,100};
-constexpr uint8_t COLOR3[] = {127,255,255};
+constexpr uint8_t COLOR1[] = {0,0,204};
+constexpr uint8_t COLOR2[] = {102,0,104};
+constexpr uint8_t COLOR3[] = {128,255,0};
 
-constexpr bool RENDER = false;
+constexpr bool RENDER = true;
 
 /* PROGRAM COMMANDS //
 (from ".../Navi Project")
@@ -519,7 +522,8 @@ void savePixelBufferAsPPM(int frameNumber) {
     // pixelBuffer is already in that format but upside-down,
     // so we flip vertically:
     for (int y = 0; y < HEIGHT; ++y) {
-        int rowStart = (HEIGHT - 1 - y) * WIDTH * 3;
+        int rowStart = y * WIDTH * 3;
+        // int rowStart = (HEIGHT - 1 - y) * WIDTH * 3;
         out.write(reinterpret_cast<char*>(&pixelBuffer[rowStart]), WIDTH * 3);
     }
 }
@@ -622,7 +626,29 @@ void audio_callback(ma_device* device, void* output, const void* input, ma_uint3
     }
 }
 
+// overwrite a copy of the song to audio.wav so the batch program runs properly
+void copySongChoice() {
+    const std::string source = audioFileName;  // original filename
+    const std::string destination = "version0/audio.wav"; // new filename
+
+    std::ifstream src(source, std::ios::binary);
+    std::ofstream dst(destination, std::ios::binary);
+
+    if (!src) {
+        std::cerr << "Error: could not open source file.\n";
+    }
+    if (!dst) {
+        std::cerr << "Error: could not open destination file.\n";
+    }
+
+    dst << src.rdbuf();
+
+    std::cout << "Copied " << source << " to " << destination << "\n";
+}
+
 int main() {
+    copySongChoice();
+
     // create index sheet for choosing colors quickly from intensity
     fillColorIndexArrays(R_INDEX, G_INDEX, B_INDEX, COLOR1, COLOR2, COLOR3);
     initFont();
