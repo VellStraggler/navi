@@ -217,6 +217,7 @@ CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj: C:/Users/david/OneDrive/Deskto
   C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/particle.cpp \
   C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/point.h \
   C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/processedaudio.h \
+  C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/settings.h \
   C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/stb_truetype.h \
   C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/transcript.h \
   c:/mingw/include/_mingw.h \
@@ -441,6 +442,8 @@ c:/mingw/include/basetsd.h:
 c:/mingw/include/sys/time.h:
 
 c:/mingw/include/stdio.h:
+
+C:/Users/david/OneDrive/Desktop/COURSEWORK/Navi\ Project/version0/settings.h:
 
 c:/mingw/lib/gcc/mingw32/6.3.0/include/c++/bits/memoryfwd.h:
 

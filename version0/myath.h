@@ -8,12 +8,19 @@ constexpr float twoPI = PI * 2;
 constexpr float PI_2 = PI / 2.0f;
 constexpr float DEGREE = PI_2 / 90.0f;
 
-float randFloat(float from, float to) {
-    float zeroToOne = static_cast<float>(std::rand()) / static_cast<float>(RAND_MAX);
+// used a state/seed to create reproducible results
+float randFloat(uint32_t& state, float from, float to) {
+    // Linear Congruential Generator step
+    state = 1664525 * state + 1013904223;
+
+    // Scale to [0, 1)
+    float zeroToOne = (state >> 8) * (1.0f / 16777216.0f);
+
     return from + zeroToOne * (to - from);
 }
-float randFloat(float from0to) {
-    return randFloat(0,from0to);
+
+float randFloat(uint32_t& state, float from0to) {
+    return randFloat(state, 0,from0to);
 }
 float toDegrees(float direction) {
     return 360 * direction / (PI_2*4);

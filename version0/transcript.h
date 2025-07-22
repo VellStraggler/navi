@@ -21,14 +21,16 @@ public:
         if (index < entries.size()) {
             return entries[index];
         } else {
-            return {0,"null"};
+            return {0,""};
         }
     }
     void moveIndex() {
-        index++;
-        if (index >= entries.size()) {
-            index = entries.size() -1;
+        if (moreIndex()) {
+            index++;
         }
+    }
+    bool moreIndex() {
+        return index < entries.size();
     }
 };
 

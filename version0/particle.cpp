@@ -23,8 +23,8 @@ public:
         : x(x), y(y), intensity(intensity) {
         this->speed = speed;
         // improves particle spread
-        this->direction = randFloat(generalDirection-(PI_2/4), generalDirection + (PI_2/4));
-        lifeCycle = randFloat(maxLifeCycle);
+        this->direction = randFloat(SEED, generalDirection-(PI_2/4), generalDirection + (PI_2/4));
+        lifeCycle = randFloat(SEED, maxLifeCycle);
         timeAlive = 0;
     }
     std::string toString() {
@@ -50,8 +50,8 @@ public:
         // song gets more volatile
         if (volume > .2) {
             float volMult = volume * 2;
-            y += randFloat(-volMult,volMult);
-            x += randFloat(-volMult,volMult);
+            y += randFloat(SEED, -volMult,volMult);
+            x += randFloat(SEED, -volMult,volMult);
         }
         
         speed *= DECEL;

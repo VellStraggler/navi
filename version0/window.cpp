@@ -8,6 +8,7 @@
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
+#include "settings.h"
 #include <GLFW/glfw3.h>
 #include <chrono>
 #include <iostream>
@@ -22,31 +23,6 @@
 #include <cstring>
 #include <fstream>
 
-/* SETTINGS */
-
-const char* audioFileName = "./resources/first-song.wav";
-const char* songTitle = "moon moon";
-const char* outputFileName = "./output.mp4";
-const char* transcriptFileName = "./resources/transcript.txt";
-
-constexpr int HEIGHT = 480;
-constexpr int WIDTH = 720;
-constexpr int FLIT_COUNT = 4;
-constexpr int FRAMERATE = 30; // rendered video is still fixed to 30 :/
-constexpr float TEMPO = 120;
-
-constexpr int NEW_FRAME_PARTICLES = 10;
-constexpr float MAX_INTENSITY = 1.0f;
-constexpr float MAX_LIGHT_REACH = 100.0f;
-constexpr int VOLUME_MULT = 4;
-
-// https://www.rapidtables.com/web/color/RGB_Color.html
-constexpr uint8_t COLOR1[] = {0,0,204};
-constexpr uint8_t COLOR2[] = {102,0,104};
-constexpr uint8_t COLOR3[] = {228,255,0};
-
-constexpr bool RENDER = false;
-
 /* PROGRAM COMMANDS //
 (from ".../Navi Project")
 
@@ -58,6 +34,7 @@ ffmpeg -framerate 30 -i version0/frames/frame_%05d.ppm -i resources/audio.wav -c
 
 /* -------- */
 
+constexpr float MAX_INTENSITY = 1.0f;
 constexpr uint8_t BLACK[] = {0,0,0};
 constexpr uint8_t WHITE[] = {25,255,255};
 
@@ -82,7 +59,7 @@ ma_decoder decoder;
 
 // Global Image Data
 GLuint screenTexID;
-std::vector<uint8_t> pixelBuffer(WIDTH * HEIGHT * 3);
+std::vector<uint8_t> pixelBuffer;
 
 void print(std::string words) {
     std::cout << words << std::endl;
@@ -135,13 +112,12 @@ public:
     double frame_out = currentTime + (1000.0/FRAMERATE);
     int64_t second_out = currentTime + 1000;
     bool hasRenderedAtLeastOnce = false;
-    float lastVol = 0;
-    int sameVolCount = 0; // at 10: rudimentary way to know when the song is over
-
     int particleCount = 0;
 
+    float lastVol = 0;
+    int sameVolCount = 0; // at 10: rudimentary way to know when the song is over
     float currentVolume;
-    
+
     float getPixel(int x, int y) const {
         if(x < 1 || x > WIDTH -1 || y < 1 || y > HEIGHT -1) {
             return (0.0f);
@@ -153,6 +129,9 @@ public:
         if(x > 0 && x < WIDTH && y > 0 && y < HEIGHT) {
             pixels[y][x] = val;
         }
+    }
+    float getAvgVol() {
+        return (currentVolume + lastVol)/2;
     }
     Window() = default;
 
@@ -177,6 +156,9 @@ void drawCircle(float x, float y, float radius) {
 
     glEnd();
 }
+void wait(float ms) {
+    glfwWaitEventsTimeout(ms);
+}
 void drawFlitCircle(const Flit& flit) {
     // Set color to white
     glColor3f(1.0f,1.0f,1.0f); // WHITE
@@ -200,35 +182,35 @@ float getTextWidth(const std::string& text) {
 }
 
 void makeExplosion(std::vector<Particle>& ps, float x, float y, int time, float speed, float v) {
-    int booms = (40 * speed);
+    int booms = (1000 * speed);
     if (v == 0) {
-        int booms = 40;
         for(int j = 0; j < booms; j++) {
                 Particle p = Particle(x, y, speed, j*(twoPI/booms), MAX_INTENSITY, time);
                 p.timeAlive = -30;
                 ps.push_back(p);
             }
-    }
-    float radiusX = 100.0f; // Horizontal radius
-    float minFrac = 0.1f;
-    float radiusY = 100.0f / (v*10);  // Vertical radius
-
-    for (int i = 0; i < booms; i++) {
-        // Oval radii
-        float a = radiusX;  // horizontal radius
-        float b = radiusY;  // vertical radius
-
-        // Angle for this particle
-        float angle = i * (twoPI / booms);
-
-        // Max distance this particle should travel before dying (oval edge)
-        float maxDist = 1.0f / sqrtf((cosf(angle)*cosf(angle))/(a*a) + (sinf(angle)*sinf(angle))/(b*b));
-
-        // Convert that distance into lifetime
-        float timeAlive = time * .02 * maxDist / speed;
-
-        ps.push_back(Particle(x, y, speed, angle, MAX_INTENSITY, timeAlive));
-    }
+    } else {
+        float radiusX = 100.0f; // Horizontal radius
+        float minFrac = 0.1f;
+        float radiusY = 100.0f / (v*10);  // Vertical radius
+        
+        for (int i = 0; i < booms; i++) {
+            // Oval radii
+            float a = radiusX;  // horizontal radius
+            float b = radiusY;  // vertical radius
+            
+            // Angle for this particle
+            float angle = i * (twoPI / booms);
+            
+            // Max distance this particle should travel before dying (oval edge)
+            float maxDist = 1.0f / sqrtf((cosf(angle)*cosf(angle))/(a*a) + (sinf(angle)*sinf(angle))/(b*b));
+            
+            // Convert that distance into lifetime
+            float timeAlive = time * .02 * maxDist / speed;
+            
+            ps.push_back(Particle(x, y, speed, angle, MAX_INTENSITY, timeAlive));
+        }
+    }    
 }
 
 void textExplosion(std::vector<Particle>& ps, float x, float y, int textWidth) {
@@ -266,7 +248,6 @@ void drawTextToBuffer(Window& w, std::vector<Particle>& ps, const std::string& t
     float y = startY;  // y is baseline
 
     // draw a firework in the middle of this text
-    // makeExplosion(ps, startX, startY - (fontHeight / 4), 500, 0.7f, 1);
     textExplosion(ps, x, (startY - (fontHeight /4)), textWidth);
 
     for (char c : text) {
@@ -326,7 +307,7 @@ void drawParticles(Window& w, std::vector<Particle>& ps) {
                 }
             }
             if (p.timeAlive > 50) {
-                if (randFloat(1) < .02) {
+                if (randFloat(SEED, 1) < .02) {
                     p.radius = 1;
                     Particle p2 = Particle(p.x, p.y, p.speed, p.direction, p.intensity, p.lifeCycle);
                     newParticles.push_back(p2);
@@ -351,18 +332,47 @@ void drawParticles(Window& w, std::vector<Particle>& ps) {
 */
 void drawAndFadePixels(Window& w, std::vector<Particle>& ps) {
 
-    if (currentText.length() > 0) {
+    if (currentText.length() > 0 && TRANSCRIBE) {
         drawTextToBuffer(w, ps, currentText, WIDTH/2, HEIGHT/2, 100.0f);
     }
 
     // fill buffer with our array
-    for (int y = 0; y < HEIGHT; ++y) {
-        for (int x = 0; x < WIDTH; ++x) {
-            float i = w.getPixel(x, y);
-            int index = (y * WIDTH + x) * 3;
-            if (i > 0) {
-                // DIMMING
-                w.setPixel(x, y, i - 1);
+    if (VOLUME_AFFECTS_COLOR) {
+        float volPercent = getMax(0,getMin(1,(    w.getAvgVol()    )));
+
+        for (int y = 0; y < HEIGHT; ++y) {
+            for (int x = 0; x < WIDTH; ++x) {
+                float i = w.getPixel(x, y);
+                int index = (y * WIDTH + x) * 3;
+                if (i > 0) {
+                    // DIMMING
+                    w.setPixel(x, y, i - 1);
+                }
+                // DRAWING
+                // my super special, epictacular light equation
+                i = i * i * (i / 500000.0f);
+                float value = getMin(i, 1.0f);
+                uint8_t g = static_cast<uint8_t>(value * 255.0f);
+
+                // Scale down volPercent based on brightness
+                float brightness = getMax(getMax(R_INDEX[g], G_INDEX[g]), B_INDEX[g]) / 255.0f;
+                float adjustedVolPercent = volPercent * brightness;
+                float altPercent = 1 - adjustedVolPercent;
+
+                pixelBuffer[index + 0] = R_INDEX[g] * altPercent + VOLUME_COLOR_EFFECT[0] * adjustedVolPercent;
+                pixelBuffer[index + 1] = G_INDEX[g] * altPercent + VOLUME_COLOR_EFFECT[1] * adjustedVolPercent;
+                pixelBuffer[index + 2] = B_INDEX[g] * altPercent + VOLUME_COLOR_EFFECT[2] * adjustedVolPercent;
+            }
+        }
+    } else {
+        for (int y = 0; y < HEIGHT; ++y) {
+            for (int x = 0; x < WIDTH; ++x) {
+                float i = w.getPixel(x, y);
+                int index = (y * WIDTH + x) * 3;
+                if (i > 0) {
+                    // DIMMING
+                    w.setPixel(x, y, i - 1);
+                }
                 // DRAWING
                 // my super special, epictacular light equation
                 i = i * i * (i / 500000.0f);
@@ -371,11 +381,6 @@ void drawAndFadePixels(Window& w, std::vector<Particle>& ps) {
                 pixelBuffer[index + 0] = R_INDEX[g];
                 pixelBuffer[index + 1] = G_INDEX[g];
                 pixelBuffer[index + 2] = B_INDEX[g];
-
-            } else {
-                pixelBuffer[index + 0] = 0;
-                pixelBuffer[index + 1] = 0;
-                pixelBuffer[index + 2] = 0;
             }
         }
     }
@@ -507,7 +512,7 @@ void affectParticles(const Flit& flit, Window& w, std::vector<Particle>& particl
     float fdy = flit.getDY();
     float fspeed = flit.speed;
     float fdirection = flit.getDir();
-    float influence = 75;
+    float influence = FLIT_INFLUENCE_RANGE;
 
     for(Particle& p : particles) {
         if (p.timeAlive < 0) {
@@ -529,6 +534,7 @@ void affectParticles(const Flit& flit, Window& w, std::vector<Particle>& particl
 }
 
 void initTexture() {
+    pixelBuffer.resize(WIDTH * HEIGHT * 4);
     glGenTextures(1, &screenTexID);
     glBindTexture(GL_TEXTURE_2D, screenTexID);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WIDTH, HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, pixelBuffer.data());
@@ -571,14 +577,21 @@ void savePixelBufferAsPPM(int frameNumber) {
     }
 }
 
-int liveRender() {
+void liveRender() {
+    std::cout << "A" << std::endl;
+    wait(1);
     Window w = Window();
+    print("B");
     std::vector<Flit> flits = getFlits(FLIT_COUNT);
+    print("C");
     std::vector<Particle> particles = {};
     int volI = 0;
-
+    print("D");
+    
     GLFWwindow* window = initGLFWWindow();
+    print("E");
     initTexture();
+    print("F");
 
     int64_t renderStartTime = currentTimeMs();
 
@@ -595,11 +608,15 @@ int liveRender() {
         }
         printSecondInfo(w, volI);
  
-        TranscriptEntry transcriptEntry = transcript.getCurrentIndex();
-        // std::cout << transcriptEntry.startTime << " " << renderStartTime << " " << (int64_t)(transcriptEntry.startTime + renderStartTime) << " "<< w.currentTime << std::endl;
-        if ((transcriptEntry.startTime) + renderStartTime <= w.currentTime) {
-            currentText = transcriptEntry.text;
-            transcript.moveIndex();
+        if(TRANSCRIBE) {
+            TranscriptEntry transcriptEntry = transcript.getCurrentIndex();
+            if ((transcriptEntry.startTime) + renderStartTime <= w.currentTime) {
+                currentText = transcriptEntry.text;
+                if(transcript.moreIndex()) {
+                    transcript.moveIndex();
+                    makeExplosion(particles, WIDTH/2, HEIGHT/2, 500, .5f + (.5f*transcriptEntry.text.length()), 0);
+                }
+            }
         }
 
         // clearScreen(); //unnecessary
@@ -641,7 +658,7 @@ int liveRender() {
         }
         
         drawAndFadePixels(w, particles);
-        if (RENDER) {
+        if (EXPORT_VIDEO) {
             savePixelBufferAsPPM(volI);
         }
         loadNextScreen(window);
@@ -700,12 +717,16 @@ void copySongChoice() {
 }
 
 int main() {
-    copySongChoice();
-    transcript = parseTranscriptFile(transcriptFileName);
+    if(EXPORT_VIDEO) {
+        copySongChoice();
+    }
+    if(TRANSCRIBE) {
+        transcript = parseTranscriptFile(transcriptFileName);
+        initFont();
+    }
 
     // create index sheet for choosing colors quickly from intensity
     fillColorIndexArrays(R_INDEX, G_INDEX, B_INDEX, COLOR1, COLOR2, COLOR3);
-    initFont();
 
     //////////////////////
     // AUDIO PROCESSING //
@@ -744,8 +765,11 @@ int main() {
         ma_decoder_uninit(&decoder);
         return -1;
     }
-
+    print("Z");
     // Run visualizer
+    wait(1);
+    print("help");
+    wait(1);
     liveRender();
 
     // Cleanup

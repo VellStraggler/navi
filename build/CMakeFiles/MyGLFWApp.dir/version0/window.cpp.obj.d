@@ -17,13 +17,14 @@ CMakeFiles/MyGLFWApp.dir/version0/window.cpp.obj: \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\stddef.h \
  c:\mingw\include\assert.h c:\mingw\include\string.h \
  c:\mingw\include\strings.h c:\mingw\include\wchar.h \
- C:/code-tools/glfw/include/GLFW/glfw3.h \
+ C:\Users\david\OneDrive\Desktop\COURSEWORK\Navi\ Project\version0\settings.h \
+ c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cstdint \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\stdint.h \
- c:\mingw\include\stdint.h c:\mingw\include\gl\gl.h \
+ c:\mingw\include\stdint.h C:/code-tools/glfw/include/GLFW/glfw3.h \
+ c:\mingw\include\gl\gl.h \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\chrono \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\ratio \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\type_traits \
- c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\cstdint \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\limits \
  c:\mingw\lib\gcc\mingw32\6.3.0\include\c++\ctime c:\mingw\include\time.h \
  c:\mingw\include\sys\types.h \

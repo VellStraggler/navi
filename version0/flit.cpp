@@ -71,8 +71,8 @@ public:
         if(turnLeft) {
             sign = 1;
         }
-        float midX = 240;
-        float midY = 360;
+        float midX = WIDTH/2;
+        float midY = HEIGHT/2;
         float pull = .4;
         float dirToCenter = atan2(midY - getY(), midX - getX());
         float newDirX = (1 - pull) * cos(direction) + pull * cos(dirToCenter);
@@ -82,17 +82,17 @@ public:
         globalPos.y += cos(dirToCenter) * pull;
 
 
-        if (globalPos.y < 0 + radius) {
+        if (globalPos.y < 0) {
             globalPos.y += 5;
             direction = atan2(newDirY, newDirX);
-        } else if (globalPos.y > 480 - radius) {
+        } else if (globalPos.y > HEIGHT) {
             globalPos.y -= 5;
             direction = atan2(newDirY, newDirX);
         }
-        if (globalPos.x > 720 - radius) {
+        if (globalPos.x > WIDTH) {
             globalPos.x -= 5;
             direction = atan2(newDirY, newDirX);
-        } else if (globalPos.x < 0 + radius) {
+        } else if (globalPos.x < 0) {
             globalPos.x += 5;
             direction = atan2(newDirY, newDirX);
         }
