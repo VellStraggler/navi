@@ -13,12 +13,13 @@ if errorlevel 1 goto :error
 
 :: Step 3: Convert frames + audio to video using ffmpeg
 echo Generating video with ffmpeg...
-ffmpeg -y -framerate 30 -i version0/frames/frame_%%05d.ppm -i version0/audio.wav -c:v libx264 -pix_fmt yuv420p -c:a aac -shortest version0/output.mp4
+ffmpeg -y -framerate 30 -i version0/frames/frame_%%05d.ppm -i resources/audio.wav -c:v libx264 -pix_fmt yuv420p -c:a aac -shortest output.mp4
 del /q version0\frames\*.ppm
+del /q resources\audio.wav
 if errorlevel 1 goto :error
 
 echo.
-echo ✅ Done! Output saved to version0\output.mp4
+echo ✅ Done! Output saved to output.mp4
 goto :end
 
 :error

@@ -11,10 +11,11 @@
 #include <GLFW/glfw3.h>
 #include <chrono>
 #include <iostream>
+#include <cmath>
 #include "flit.cpp"
 #include "particle.cpp"
-#include <cmath>
 #include "processedaudio.h"
+#include "transcript.h"
 #include "myath.h"
 #include <algorithm>
 #include <atomic>
@@ -23,14 +24,15 @@
 
 /* SETTINGS */
 
-const char* audioFileName = "./version0/moon moon.wav";
+const char* audioFileName = "./resources/first-song.wav";
 const char* songTitle = "moon moon";
-const char* outputFileName = "./version0/output.mp4";
+const char* outputFileName = "./output.mp4";
+const char* transcriptFileName = "./resources/transcript.txt";
 
 constexpr int HEIGHT = 480;
 constexpr int WIDTH = 720;
-constexpr int FLIT_COUNT = 6;
-constexpr int FRAMERATE = 60; // rendered video is still fixed to 30 :/
+constexpr int FLIT_COUNT = 4;
+constexpr int FRAMERATE = 30; // rendered video is still fixed to 30 :/
 constexpr float TEMPO = 120;
 
 constexpr int NEW_FRAME_PARTICLES = 10;
@@ -41,9 +43,9 @@ constexpr int VOLUME_MULT = 4;
 // https://www.rapidtables.com/web/color/RGB_Color.html
 constexpr uint8_t COLOR1[] = {0,0,204};
 constexpr uint8_t COLOR2[] = {102,0,104};
-constexpr uint8_t COLOR3[] = {128,255,0};
+constexpr uint8_t COLOR3[] = {228,255,0};
 
-constexpr bool RENDER = true;
+constexpr bool RENDER = false;
 
 /* PROGRAM COMMANDS //
 (from ".../Navi Project")
@@ -52,7 +54,7 @@ cmake --build build
 
 ./build/MyGLFWAPP.exe
 
-ffmpeg -framerate 30 -i version0/frames/frame_%05d.ppm -i version0/audio.wav -c:v libx264 -pix_fmt yuv420p -c:a aac -shortest version0/output.mp4
+ffmpeg -framerate 30 -i version0/frames/frame_%05d.ppm -i resources/audio.wav -c:v libx264 -pix_fmt yuv420p -c:a aac -shortest output.mp4
 
 /* -------- */
 
@@ -70,6 +72,10 @@ stbtt_bakedchar cdata[96]; // ASCII 32..126
 float fontHeight = 48.0f;
 stbtt_fontinfo fontInfo;
 
+// Transcript Data
+Transcript transcript;
+std::string currentText;
+
 // Global Volume Data
 std::atomic<float> g_currentVolume(0.0f);
 ma_decoder decoder;
@@ -77,6 +83,10 @@ ma_decoder decoder;
 // Global Image Data
 GLuint screenTexID;
 std::vector<uint8_t> pixelBuffer(WIDTH * HEIGHT * 3);
+
+void print(std::string words) {
+    std::cout << words << std::endl;
+}
 
 /*All Flits start out in the center of the screen.*/
 std::vector<Flit> getFlits(int count) {
@@ -99,7 +109,7 @@ std::vector<Flit> getFlits(int count) {
 }
 
 void initFont() {
-    FILE* fontFile = fopen("version0/Quintessential-Regular.ttf", "rb");
+    FILE* fontFile = fopen("resources/Quintessential-Regular.ttf", "rb");
     fread(ttf_buffer, 1, 1<<20, fontFile);
     fclose(fontFile);
 
@@ -121,9 +131,9 @@ class Window {
 public:
     double x = 0;
     int frames = 0;
-    int64_t t1 = currentTimeMs();
-    double frame_out = t1 + (1000.0/FRAMERATE);
-    int64_t second_out = t1 + 1000;
+    int64_t currentTime = currentTimeMs();
+    double frame_out = currentTime + (1000.0/FRAMERATE);
+    int64_t second_out = currentTime + 1000;
     bool hasRenderedAtLeastOnce = false;
     float lastVol = 0;
     int sameVolCount = 0; // at 10: rudimentary way to know when the song is over
@@ -175,14 +185,17 @@ void drawFlitCircle(const Flit& flit) {
     const float radius = flit.getRadius();
 }
 
-float getTextWidth(const char* text) {
+float getTextWidth(const std::string& text) {
     float width = 0.0f;
-    for (const char* p = text; *p; ++p) {
+    const char* p = text.c_str();  // convert to C-string for pointer iteration
+
+    for (; *p; ++p) {
         if (*p >= 32 && *p < 128) {
             stbtt_bakedchar* b = &cdata[*p - 32];
             width += b->xadvance;
         }
     }
+
     return width;
 }
 
@@ -218,20 +231,20 @@ void makeExplosion(std::vector<Particle>& ps, float x, float y, int time, float 
     }
 }
 
-void drawTextToBuffer(Window& w, std::vector<Particle>& ps, const char* text, float startX, float startY, 
-                      float intensity) {
-    
+void drawTextToBuffer(Window& w, std::vector<Particle>& ps, const std::string& text,
+                      float startX, float startY, float intensity) {
+
     float textWidth = getTextWidth(text);
     float x = startX - textWidth / 2;
-    float y = startY;  // y is baseline, do NOT add ascent or baselineOffset here
+    float y = startY;  // y is baseline
 
     // draw a firework in the middle of this text
-    makeExplosion(ps, startX, startY - (fontHeight/4), 500, .7, 1);
+    makeExplosion(ps, startX, startY - (fontHeight / 4), 500, 0.7f, 1);
 
-    for (; *text; ++text) {
-        if (*text < 32 || *text >= 128) continue; // only ASCII baked chars
+    for (char c : text) {
+        if (c < 32 || c >= 128) continue; // only ASCII baked chars
 
-        stbtt_bakedchar* b = &cdata[*text - 32];
+        stbtt_bakedchar* b = &cdata[c - 32];
         int charWidth = b->x1 - b->x0;
         int charHeight = b->y1 - b->y0;
 
@@ -250,7 +263,7 @@ void drawTextToBuffer(Window& w, std::vector<Particle>& ps, const char* text, fl
                         float newIntensity = (alpha / 255.0f) * intensity;
                         float existing = w.getPixel(px, py);
                         newIntensity = getMax(existing, newIntensity);
-                        w.setPixel(px, py, 0);
+                        w.setPixel(px, py, 0); // assuming channel 0 is brightness
                     }
                 }
             }
@@ -310,7 +323,9 @@ void drawParticles(Window& w, std::vector<Particle>& ps) {
 */
 void drawAndFadePixels(Window& w, std::vector<Particle>& ps) {
 
-    drawTextToBuffer(w, ps, songTitle, WIDTH/2, HEIGHT/2, 100.0f);
+    if (currentText.length() > 0) {
+        drawTextToBuffer(w, ps, currentText, WIDTH/2, HEIGHT/2, 100.0f);
+    }
 
     // fill buffer with our array
     for (int y = 0; y < HEIGHT; ++y) {
@@ -439,10 +454,10 @@ GLFWwindow* initGLFWWindow() {
     return window;
 }
 void printSecondInfo(Window& w, int volI) {
-    w.t1 = currentTimeMs();
-    if (w.t1 > w.second_out) {
+    w.currentTime = currentTimeMs();
+    if (w.currentTime > w.second_out) {
         std::cout << (w.frames) << " fps, " << volI << " total frames" <<std::endl;
-        w.second_out = w.t1 + 1000;
+        w.second_out = w.currentTime + 1000;
         w.frames = 0;
     }
     w.frames++;
@@ -494,7 +509,7 @@ void initTexture() {
 }
 
 bool frameTooSoon(Window& w) {
-    w.t1 = currentTimeMs();
+    w.currentTime = currentTimeMs();
     const double frameDuration = 1000.0 / FRAMERATE;
     
 
@@ -505,7 +520,7 @@ bool frameTooSoon(Window& w) {
         return false;
     }
 
-    if (w.t1 >= w.frame_out) {
+    if (w.currentTime >= w.frame_out) {
         w.frame_out += frameDuration;
         return false;
     }
@@ -537,10 +552,13 @@ int liveRender() {
     GLFWwindow* window = initGLFWWindow();
     initTexture();
 
-    // PRINT LOOP
+    int64_t renderStartTime = currentTimeMs();
+
     float vol;
     // the volume never hits 0, but it does flatten to a very very small number
     // we'll look for a flattening to see when the song ends
+
+    // PRINT LOOP
     while (!glfwWindowShouldClose(window) && w.sameVolCount < 10) {
 
         // lock to given framerate
@@ -548,6 +566,13 @@ int liveRender() {
             glfwWaitEventsTimeout(0.001);
         }
         printSecondInfo(w, volI);
+ 
+        TranscriptEntry transcriptEntry = transcript.getCurrentIndex();
+        // std::cout << transcriptEntry.startTime << " " << renderStartTime << " " << (int64_t)(transcriptEntry.startTime + renderStartTime) << " "<< w.currentTime << std::endl;
+        if ((transcriptEntry.startTime) + renderStartTime <= w.currentTime) {
+            currentText = transcriptEntry.text;
+            transcript.moveIndex();
+        }
 
         // clearScreen(); //unnecessary
 
@@ -629,7 +654,7 @@ void audio_callback(ma_device* device, void* output, const void* input, ma_uint3
 // overwrite a copy of the song to audio.wav so the batch program runs properly
 void copySongChoice() {
     const std::string source = audioFileName;  // original filename
-    const std::string destination = "version0/audio.wav"; // new filename
+    const std::string destination = "resources/audio.wav"; // new filename
 
     std::ifstream src(source, std::ios::binary);
     std::ofstream dst(destination, std::ios::binary);
@@ -648,6 +673,7 @@ void copySongChoice() {
 
 int main() {
     copySongChoice();
+    transcript = parseTranscriptFile(transcriptFileName);
 
     // create index sheet for choosing colors quickly from intensity
     fillColorIndexArrays(R_INDEX, G_INDEX, B_INDEX, COLOR1, COLOR2, COLOR3);
