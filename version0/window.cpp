@@ -231,6 +231,33 @@ void makeExplosion(std::vector<Particle>& ps, float x, float y, int time, float 
     }
 }
 
+void textExplosion(std::vector<Particle>& ps, float x, float y, int textWidth) {
+    float speed = 1.7f;
+    int lifeCycle = 70;
+    // draw hemisphere explosions on the sides
+    for(int a = 0; a < fontHeight; a++) {
+        float angle = PI_2 + (a*(PI/fontHeight)); 
+        Particle p = Particle(x,y,speed,0,MAX_INTENSITY, lifeCycle);
+        p.direction = angle;
+        Particle p2 = Particle(x + textWidth,y,speed,0,MAX_INTENSITY, lifeCycle);
+        p2.direction = angle + PI;
+
+        ps.push_back(p);
+        ps.push_back(p2);
+    }
+
+    // draw vertical explosions on the rest
+    for(int xi = (int)x; xi < textWidth + (int)x; xi++) {
+        Particle p = Particle(xi,y,speed,PI_2,MAX_INTENSITY,lifeCycle);
+        p.direction = PI_2;
+        Particle p2 = Particle(xi,y,speed,PI_2 + PI,MAX_INTENSITY,lifeCycle);
+        p2.direction = PI_2 + PI;
+        ps.push_back(p);
+        ps.push_back(p2);
+    }
+}
+
+
 void drawTextToBuffer(Window& w, std::vector<Particle>& ps, const std::string& text,
                       float startX, float startY, float intensity) {
 
@@ -239,11 +266,12 @@ void drawTextToBuffer(Window& w, std::vector<Particle>& ps, const std::string& t
     float y = startY;  // y is baseline
 
     // draw a firework in the middle of this text
-    makeExplosion(ps, startX, startY - (fontHeight / 4), 500, 0.7f, 1);
+    // makeExplosion(ps, startX, startY - (fontHeight / 4), 500, 0.7f, 1);
+    textExplosion(ps, x, (startY - (fontHeight /4)), textWidth);
 
     for (char c : text) {
         if (c < 32 || c >= 128) continue; // only ASCII baked chars
-
+        
         stbtt_bakedchar* b = &cdata[c - 32];
         int charWidth = b->x1 - b->x0;
         int charHeight = b->y1 - b->y0;
