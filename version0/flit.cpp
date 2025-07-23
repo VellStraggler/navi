@@ -164,5 +164,5 @@ private:
     float direction = 0;
     int timeAlive = 0;
     float acc = 1;
-    std::vector<int> color = {255, 255, 255};
+    std::vector<uint8_t> color = {255, 255, 255};
 };

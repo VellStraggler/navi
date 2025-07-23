@@ -106,7 +106,6 @@ int64_t currentTimeMs() {
 /* Contains all the methods and constants required for this */
 class Window {
 public:
-    double x = 0;
     int frames = 0;
     int64_t currentTime = currentTimeMs();
     double frame_out = currentTime + (1000.0/FRAMERATE);
@@ -114,16 +113,18 @@ public:
     bool hasRenderedAtLeastOnce = false;
     int particleCount = 0;
 
+    std::vector<int> fpsLog;
+
     float lastVol = 0;
     int sameVolCount = 0; // at 10: rudimentary way to know when the song is over
     float currentVolume;
 
+    // Returns MORE than max intensity if out of bounds.
+    // This way we won't try to replace it.
     float getPixel(int x, int y) const {
-        if(x < 1 || x > WIDTH -1 || y < 1 || y > HEIGHT -1) {
-            return (0.0f);
-        } else {
+        if (x > 0 && x < WIDTH && y > 0 && y < HEIGHT)
             return pixels[y][x];
-        }
+        return 101;
     }
     void setPixel(int x, int y, float val) {
         if(x > 0 && x < WIDTH && y > 0 && y < HEIGHT) {
@@ -133,11 +134,22 @@ public:
     float getAvgVol() {
         return (currentVolume + lastVol)/2;
     }
+    int getAvgFPS() {
+        if (fpsLog.size() == 0) {
+            return -1;
+        }
+        int total = 0;
+        for (int fps: fpsLog) {
+            total += fps;
+        }
+        return total / fpsLog.size();
+    }
     Window() = default;
 
-private:
-    /*Stores all pixels (y,x format) as an intensity number from 0f to 1.0f*/
+    /* Stores all pixels (y,x format) as an intensity number from 0f to 100.0f.
+    !Call only when safe to do so! */
     float pixels[HEIGHT][WIDTH] = {0.0f};
+    
     
 };
 void drawCircle(float x, float y, float radius) {
@@ -239,7 +251,7 @@ void textExplosion(std::vector<Particle>& ps, float x, float y, int textWidth) {
     }
 }
 
-
+// do not call near screen edges, it will crash
 void drawTextToBuffer(Window& w, std::vector<Particle>& ps, const std::string& text,
                       float startX, float startY, float intensity) {
 
@@ -272,7 +284,7 @@ void drawTextToBuffer(Window& w, std::vector<Particle>& ps, const std::string& t
                         float newIntensity = (alpha / 255.0f) * intensity;
                         float existing = w.getPixel(px, py);
                         newIntensity = getMax(existing, newIntensity);
-                        w.setPixel(px, py, 0); // assuming channel 0 is brightness
+                        w.pixels[py][px] = 0;
                     }
                 }
             }
@@ -284,10 +296,10 @@ void drawTextToBuffer(Window& w, std::vector<Particle>& ps, const std::string& t
 
 /* Draws particles to w.pixels, NOT directly to the screen*/
 void drawParticles(Window& w, std::vector<Particle>& ps) {
-    // DEBUG LINE: infrequently give size
+    // DEBUG LINE: infrequently give size and avg FPS
     if (ps.size()%100 == 0) {
         if (ps.size() != w.particleCount) {
-            std::cout << ps.size() << " particles rendered" << std::endl;
+            std::cout << ps.size() << " particles rendered, " << w.getAvgFPS() << " average FPS" << std::endl;
             w.particleCount = ps.size();
         }
     }
@@ -296,13 +308,15 @@ void drawParticles(Window& w, std::vector<Particle>& ps) {
     for (Particle& p : ps) {
         int intx = (int)p.x;
         int inty = (int)p.y;
+        float intense1 = p.intensity * 80;
+        float intense2 = p.intensity * 100;
 
         
         if (p.radius > 1) {
             for (int x = intx - 1; x < intx + 1; x++) {
                 for (int y = inty - 1; y < inty + 1; y++) {
-                    if (w.getPixel(x, y) < p.intensity * 80) {
-                        w.setPixel(x, y, p.intensity * 80);
+                    if (w.getPixel(x, y) < intense1) {
+                        w.pixels[y][x] = intense2;
                     }
                 }
             }
@@ -315,8 +329,8 @@ void drawParticles(Window& w, std::vector<Particle>& ps) {
                 }
             }
         }
-        if (w.getPixel(intx, inty) < p.intensity * 100) {
-            w.setPixel(intx, inty, p.intensity * 100);
+        if (w.getPixel(intx, inty) < intense2) {
+            w.pixels[inty][intx] = intense2;
         }
         // always pick the brighter intensity
         //update pixel for future draws
@@ -344,24 +358,28 @@ void drawAndFadePixels(Window& w, std::vector<Particle>& ps) {
             for (int x = 0; x < WIDTH; ++x) {
                 float i = w.getPixel(x, y);
                 int index = (y * WIDTH + x) * 3;
-                if (i > 0) {
+                if (i > 20) { // trying to save on CPU here
                     // DIMMING
                     w.setPixel(x, y, i - 1);
+                    // DRAWING
+                    // my super special, epictacular light equation
+                    i = i * i * (i / 500000.0f);
+                    float value = getMin(i, 1.0f);
+                    uint8_t g = static_cast<uint8_t>(value * 255.0f);
+                    
+                    // Scale down volPercent based on brightness
+                    float brightness = getMax(getMax(R_INDEX[g], G_INDEX[g]), B_INDEX[g]) / 255.0f;
+                    float adjustedVolPercent = volPercent * brightness;
+                    float altPercent = 1 - adjustedVolPercent;
+                    
+                    pixelBuffer[index + 0] = R_INDEX[g] * altPercent + VOLUME_COLOR_EFFECT[0] * adjustedVolPercent;
+                    pixelBuffer[index + 1] = G_INDEX[g] * altPercent + VOLUME_COLOR_EFFECT[1] * adjustedVolPercent;
+                    pixelBuffer[index + 2] = B_INDEX[g] * altPercent + VOLUME_COLOR_EFFECT[2] * adjustedVolPercent;
+                } else {
+                    pixelBuffer[index + 0] = 0;
+                    pixelBuffer[index + 1] = 0;
+                    pixelBuffer[index + 2] = 0;
                 }
-                // DRAWING
-                // my super special, epictacular light equation
-                i = i * i * (i / 500000.0f);
-                float value = getMin(i, 1.0f);
-                uint8_t g = static_cast<uint8_t>(value * 255.0f);
-
-                // Scale down volPercent based on brightness
-                float brightness = getMax(getMax(R_INDEX[g], G_INDEX[g]), B_INDEX[g]) / 255.0f;
-                float adjustedVolPercent = volPercent * brightness;
-                float altPercent = 1 - adjustedVolPercent;
-
-                pixelBuffer[index + 0] = R_INDEX[g] * altPercent + VOLUME_COLOR_EFFECT[0] * adjustedVolPercent;
-                pixelBuffer[index + 1] = G_INDEX[g] * altPercent + VOLUME_COLOR_EFFECT[1] * adjustedVolPercent;
-                pixelBuffer[index + 2] = B_INDEX[g] * altPercent + VOLUME_COLOR_EFFECT[2] * adjustedVolPercent;
             }
         }
     } else {
@@ -491,6 +509,7 @@ void printSecondInfo(Window& w, int volI) {
     if (w.currentTime > w.second_out) {
         std::cout << (w.frames) << " fps, " << volI << " total frames" <<std::endl;
         w.second_out = w.currentTime + 1000;
+        w.fpsLog.push_back(w.frames);
         w.frames = 0;
     }
     w.frames++;
@@ -578,20 +597,13 @@ void savePixelBufferAsPPM(int frameNumber) {
 }
 
 void liveRender() {
-    std::cout << "A" << std::endl;
-    wait(1);
     Window w = Window();
-    print("B");
     std::vector<Flit> flits = getFlits(FLIT_COUNT);
-    print("C");
     std::vector<Particle> particles = {};
     int volI = 0;
-    print("D");
     
     GLFWwindow* window = initGLFWWindow();
-    print("E");
     initTexture();
-    print("F");
 
     int64_t renderStartTime = currentTimeMs();
 
